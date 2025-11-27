@@ -25,6 +25,15 @@ public class Internship {
     @Column(name = "skills_required")
     private String skillsRequired;
     
+    @Column(name = "state_id")
+    private Long stateId;
+    
+    @Column(name = "city_id")
+    private Long cityId;
+    
+    @Column(name = "work_type")
+    private String workType; // Remote, On-site, Hybrid
+    
     // Constructors
     public Internship() {}
     
@@ -52,4 +61,13 @@ public class Internship {
     
     public String getSkillsRequired() { return skillsRequired; }
     public void setSkillsRequired(String skillsRequired) { this.skillsRequired = skillsRequired; }
+    
+    public Long getStateId() { return stateId; }
+    public void setStateId(Long stateId) { this.stateId = stateId; }
+    
+    public Long getCityId() { return cityId; }
+    public void setCityId(Long cityId) { this.cityId = cityId; }
+    
+    public String getWorkType() { return workType; }
+    public void setWorkType(String workType) { this.workType = workType; }
 }

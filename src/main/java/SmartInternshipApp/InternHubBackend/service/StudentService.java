@@ -4,6 +4,7 @@ import SmartInternshipApp.InternHubBackend.entity.Student;
 import SmartInternshipApp.InternHubBackend.repository.StudentRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import java.util.List;
 import java.util.Optional;
 
 @Service
@@ -34,5 +35,20 @@ public class StudentService {
             return true;
         }
         return false;
+    }
+    
+    public List<Student> getAllStudents() {
+        return studentRepository.findAll();
+    }
+    
+    public Student createStudent(Student student) {
+        return studentRepository.save(student);
+    }
+    
+    public List<Student> searchStudents(String keyword) {
+        if (keyword == null || keyword.trim().isEmpty()) {
+            return getAllStudents();
+        }
+        return studentRepository.findByKeyword(keyword.trim());
     }
 }
