@@ -110,25 +110,24 @@ public class AdminCertificateController {
     
     private String generateCertificateHTML(String studentName, String internshipTitle, String companyName, String template, String certificateNumber, String date) {
         return String.format(
-            "<div style='width:800px;height:600px;margin:20px auto;background:white;border:10px solid #000;box-shadow:0 0 30px rgba(0,0,0,0.3);position:relative;'>" +
-            "<div style='position:absolute;top:15px;left:15px;right:15px;bottom:15px;border:3px solid #333;background:white;padding:30px;box-sizing:border-box;'>" +
-            "<div style='text-align:center;height:100%%;display:flex;flex-direction:column;justify-content:space-between;'>" +
-            "<div style='flex-grow:1;display:flex;flex-direction:column;justify-content:center;'>" +
-            "<div style='font-family:Georgia,serif;font-size:18px;color:#666;letter-spacing:4px;margin-bottom:15px;'>CERTIFICATE OF</div>" +
-            "<h1 style='font-family:Georgia,serif;font-size:38px;color:#000;margin:0 0 15px 0;font-weight:bold;'>EXCELLENCE</h1>" +
-            "<div style='width:150px;height:2px;background:#000;margin:0 auto 20px auto;'></div>" +
-            "<div style='font-family:Georgia,serif;font-size:18px;color:#333;margin-bottom:15px;'>This is to certify that</div>" +
-            "<div style='font-family:Georgia,serif;font-size:28px;color:#000;margin:10px 0;font-weight:bold;text-transform:uppercase;border-bottom:3px solid #000;padding-bottom:8px;display:inline-block;'>%s</div>" +
-            "<div style='font-family:Georgia,serif;font-size:16px;color:#333;margin:15px 0;'>has successfully completed the internship program</div>" +
-            "<div style='border:2px solid #000;color:#000;padding:10px 20px;margin:10px auto;font-family:Georgia,serif;font-size:18px;font-weight:bold;display:inline-block;'>%s</div>" +
-            "<div style='font-family:Georgia,serif;font-size:16px;color:#333;margin:8px 0;'>at</div>" +
-            "<div style='background:#000;color:white;padding:10px 20px;margin:10px auto;font-family:Georgia,serif;font-size:18px;font-weight:bold;display:inline-block;'>%s</div>" +
+            "<div style='width:800px;height:600px;margin:40px auto;background:white;border:15px solid #e74c3c;position:relative;box-shadow:0 0 50px rgba(0,0,0,0.5);font-family:Times New Roman,serif;'>" +
+            "<div style='position:absolute;top:15px;left:15px;right:15px;bottom:15px;border:8px solid #27ae60;'></div>" +
+            "<div style='padding:60px 40px;text-align:center;height:calc(100%% - 120px);display:flex;flex-direction:column;justify-content:center;position:relative;z-index:2;'>" +
+            "<div style='font-size:42px;font-weight:bold;color:#e74c3c;margin-bottom:30px;letter-spacing:3px;'>CERTIFICATE OF ACHIEVEMENT</div>" +
+            "<div style='font-size:20px;color:#34495e;margin-bottom:25px;'>This is to certify that</div>" +
+            "<div style='font-size:36px;font-weight:bold;color:#27ae60;margin:20px 0;text-transform:uppercase;border-bottom:3px solid #e74c3c;padding-bottom:10px;display:inline-block;'>%s</div>" +
+            "<div style='font-size:18px;color:#2c3e50;margin:15px 0;'>from University</div>" +
+            "<div style='font-size:18px;color:#2c3e50;margin:15px 0;line-height:1.6;'>has successfully completed the internship program</div>" +
+            "<div style='font-size:24px;font-weight:bold;color:#e74c3c;margin:20px 0;font-style:italic;'>%s</div>" +
+            "<div style='font-size:20px;color:#27ae60;font-weight:bold;margin:15px 0;'>at %s</div>" +
+            "<div style='font-size:18px;color:#2c3e50;margin:15px 0;line-height:1.6;'>Duration: January 2024 to March 2024</div>" +
             "</div>" +
-            "<div style='display:flex;justify-content:space-between;font-family:Georgia,serif;border-top:2px solid #000;padding-top:15px;margin-top:15px;'>" +
-            "<div style='text-align:left;'><div style='font-size:12px;color:#666;margin-bottom:3px;'>Date of Completion</div><div style='font-size:14px;font-weight:bold;color:#000;'>%s</div></div>" +
-            "<div style='text-align:right;'><div style='font-size:12px;color:#666;margin-bottom:3px;'>Certificate Number</div><div style='font-size:14px;font-weight:bold;color:#000;'>%s</div></div>" +
+            "<div style='position:absolute;bottom:30px;left:40px;right:40px;display:flex;justify-content:space-between;border-top:2px solid #34495e;padding-top:20px;'>" +
+            "<div style='text-align:left;font-size:14px;color:#7f8c8d;'><div>_____________________</div><div>Authorized Signature</div></div>" +
+            "<div style='text-align:right;font-size:14px;color:#7f8c8d;'><div>%s</div><div>Issue Date</div></div>" +
             "</div>" +
-            "</div></div></div>",
+            "<div style='position:absolute;bottom:10px;left:50%%;transform:translateX(-50%%);font-size:12px;color:#95a5a6;font-weight:bold;'>Certificate No: %s</div>" +
+            "</div>",
             studentName, internshipTitle, companyName, date, certificateNumber
         );
     }
