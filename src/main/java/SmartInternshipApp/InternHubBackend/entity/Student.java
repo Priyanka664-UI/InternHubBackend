@@ -1,6 +1,7 @@
 package SmartInternshipApp.InternHubBackend.entity;
 
 import jakarta.persistence.*;
+import java.time.LocalDate;
 
 @Entity
 @Table(name = "students")
@@ -9,14 +10,23 @@ public class Student {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
     
-    @Column(nullable = false)
-    private String name;
+    @Column(name = "full_name")
+    private String fullName;
+    
+    @Column(unique = true)
+    private String username;
     
     @Column(unique = true, nullable = false)
     private String email;
     
     @Column(nullable = false)
     private String password;
+    
+    @Column(name = "birth_date")
+    private LocalDate birthDate;
+    
+    @Enumerated(EnumType.STRING)
+    private Gender gender;
     
     private String college;
     private String course;
@@ -34,8 +44,17 @@ public class Student {
     public Long getId() { return id; }
     public void setId(Long id) { this.id = id; }
     
-    public String getName() { return name; }
-    public void setName(String name) { this.name = name; }
+    public String getFullName() { return fullName; }
+    public void setFullName(String fullName) { this.fullName = fullName; }
+    
+    public String getUsername() { return username; }
+    public void setUsername(String username) { this.username = username; }
+    
+    public LocalDate getBirthDate() { return birthDate; }
+    public void setBirthDate(LocalDate birthDate) { this.birthDate = birthDate; }
+    
+    public Gender getGender() { return gender; }
+    public void setGender(Gender gender) { this.gender = gender; }
     
     public String getEmail() { return email; }
     public void setEmail(String email) { this.email = email; }
@@ -54,4 +73,8 @@ public class Student {
     
     public String getVerificationToken() { return verificationToken; }
     public void setVerificationToken(String verificationToken) { this.verificationToken = verificationToken; }
+    
+    public enum Gender {
+        MALE, FEMALE
+    }
 }

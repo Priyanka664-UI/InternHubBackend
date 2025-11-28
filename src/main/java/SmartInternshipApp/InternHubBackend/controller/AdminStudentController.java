@@ -10,7 +10,7 @@ import java.util.Optional;
 
 @RestController
 @RequestMapping("/api/admin/students")
-@CrossOrigin(origins = "*")
+@CrossOrigin(originPatterns = "*")
 public class AdminStudentController {
     
     @Autowired

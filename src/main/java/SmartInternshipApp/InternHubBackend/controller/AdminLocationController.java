@@ -2,6 +2,7 @@ package SmartInternshipApp.InternHubBackend.controller;
 
 import SmartInternshipApp.InternHubBackend.entity.State;
 import SmartInternshipApp.InternHubBackend.entity.City;
+import SmartInternshipApp.InternHubBackend.dto.CityDTO;
 import SmartInternshipApp.InternHubBackend.service.LocationService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
@@ -10,13 +11,12 @@ import java.util.List;
 
 @RestController
 @RequestMapping("/api/admin/locations")
-@CrossOrigin(origins = "*")
+@CrossOrigin(originPatterns = "*")
 public class AdminLocationController {
     
     @Autowired
     private LocationService locationService;
     
-    // State endpoints
     @GetMapping("/states")
     public ResponseEntity<List<State>> getAllStates() {
         return ResponseEntity.ok(locationService.getAllStates());
@@ -39,10 +39,9 @@ public class AdminLocationController {
         return ResponseEntity.ok("State deleted successfully");
     }
     
-    // City endpoints
     @GetMapping("/cities")
-    public ResponseEntity<List<City>> getAllCities() {
-        return ResponseEntity.ok(locationService.getAllCities());
+    public ResponseEntity<List<CityDTO>> getAllCities() {
+        return ResponseEntity.ok(locationService.getAllCitiesWithStateNames());
     }
     
     @GetMapping("/cities/by-state/{stateId}")

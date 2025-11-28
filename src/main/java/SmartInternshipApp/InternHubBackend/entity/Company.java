@@ -38,6 +38,12 @@ public class Company {
     @Column(name = "phone_number")
     private String contactPhone;
     
+    @Transient
+    private String stateName;
+    
+    @Transient
+    private String cityName;
+    
     // Constructors
     public Company() {}
     
@@ -74,4 +80,10 @@ public class Company {
     
     public CompanyCategory getCategory() { return category; }
     public void setCategory(CompanyCategory category) { this.category = category; }
+    
+    public String getStateName() { return stateName; }
+    public void setStateName(String stateName) { this.stateName = stateName; }
+    
+    public String getCityName() { return cityName; }
+    public void setCityName(String cityName) { this.cityName = cityName; }
 }

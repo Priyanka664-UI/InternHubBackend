@@ -3,6 +3,8 @@ package SmartInternshipApp.InternHubBackend.service;
 import SmartInternshipApp.InternHubBackend.entity.Company;
 import SmartInternshipApp.InternHubBackend.entity.CompanyCategory;
 import SmartInternshipApp.InternHubBackend.repository.CompanyRepository;
+import SmartInternshipApp.InternHubBackend.repository.StateRepository;
+import SmartInternshipApp.InternHubBackend.repository.CityRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import java.util.List;
@@ -14,8 +16,29 @@ public class CompanyService {
     @Autowired
     private CompanyRepository companyRepository;
     
+    @Autowired
+    private StateRepository stateRepository;
+    
+    @Autowired
+    private CityRepository cityRepository;
+    
     public List<Company> getAllCompanies() {
-        return companyRepository.findAll();
+        List<Company> companies = companyRepository.findAll();
+        populateLocationNames(companies);
+        return companies;
+    }
+    
+    private void populateLocationNames(List<Company> companies) {
+        for (Company company : companies) {
+            if (company.getStateId() != null) {
+                stateRepository.findById(company.getStateId())
+                    .ifPresent(state -> company.setStateName(state.getName()));
+            }
+            if (company.getCityId() != null) {
+                cityRepository.findById(company.getCityId())
+                    .ifPresent(city -> company.setCityName(city.getName()));
+            }
+        }
     }
     
     public Optional<Company> getCompanyById(Long id) {
@@ -23,6 +46,10 @@ public class CompanyService {
     }
     
     public Company createCompany(Company company) {
+        return companyRepository.save(company);
+    }
+    
+    public Company saveCompany(Company company) {
         return companyRepository.save(company);
     }
     
@@ -52,6 +79,8 @@ public class CompanyService {
         }
         return false;
     }
+    
+
     
     public List<Company> searchCompanies(String keyword) {
         if (keyword == null || keyword.trim().isEmpty()) {
