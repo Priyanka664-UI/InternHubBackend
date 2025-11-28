@@ -8,15 +8,11 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import java.util.List;
 import java.util.Optional;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 @RestController
 @RequestMapping("/api/admin/companies")
-@CrossOrigin(origins = "*")
-public class CompanyController {
-    
-    private static final Logger logger = LoggerFactory.getLogger(CompanyController.class);
+@CrossOrigin(originPatterns = "*")
+public class AdminCompanyController {
     
     @Autowired
     private CompanyService companyService;
@@ -34,14 +30,7 @@ public class CompanyController {
     
     @PostMapping
     public ResponseEntity<Company> createCompany(@RequestBody Company company) {
-        try {
-            logger.info("Creating company: {}", company.getName());
-            Company savedCompany = companyService.createCompany(company);
-            return ResponseEntity.ok(savedCompany);
-        } catch (Exception e) {
-            logger.error("Error creating company: ", e);
-            throw e;
-        }
+        return ResponseEntity.ok(companyService.createCompany(company));
     }
     
     @PutMapping("/{id}")
@@ -69,10 +58,5 @@ public class CompanyController {
     @GetMapping("/category/{category}")
     public ResponseEntity<List<Company>> getCompaniesByCategory(@PathVariable CompanyCategory category) {
         return ResponseEntity.ok(companyService.getCompaniesByCategory(category));
-    }
-    
-    @GetMapping("/test")
-    public ResponseEntity<String> testEndpoint() {
-        return ResponseEntity.ok("Company controller is working!");
     }
 }

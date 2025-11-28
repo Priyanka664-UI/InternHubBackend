@@ -4,10 +4,12 @@ import SmartInternshipApp.InternHubBackend.entity.Student;
 import SmartInternshipApp.InternHubBackend.repository.StudentRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 import java.util.List;
 import java.util.Optional;
 
 @Service
+@Transactional
 public class StudentService {
     
     @Autowired
@@ -21,9 +23,12 @@ public class StudentService {
         Optional<Student> existing = studentRepository.findById(id);
         if (existing.isPresent()) {
             Student student = existing.get();
-            student.setName(updatedStudent.getName());
-            student.setCollege(updatedStudent.getCollege());
-            student.setCourse(updatedStudent.getCourse());
+            if (updatedStudent.getFullName() != null) student.setFullName(updatedStudent.getFullName());
+            if (updatedStudent.getEmail() != null) student.setEmail(updatedStudent.getEmail());
+            if (updatedStudent.getBirthDate() != null) student.setBirthDate(updatedStudent.getBirthDate());
+            if (updatedStudent.getGender() != null) student.setGender(updatedStudent.getGender());
+            if (updatedStudent.getCollege() != null) student.setCollege(updatedStudent.getCollege());
+            if (updatedStudent.getCourse() != null) student.setCourse(updatedStudent.getCourse());
             return studentRepository.save(student);
         }
         return null;
