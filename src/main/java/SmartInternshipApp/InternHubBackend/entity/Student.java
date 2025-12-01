@@ -13,9 +13,6 @@ public class Student {
     @Column(name = "full_name")
     private String fullName;
     
-    @Column(unique = true)
-    private String username;
-    
     @Column(unique = true, nullable = false)
     private String email;
     
@@ -46,9 +43,6 @@ public class Student {
     
     public String getFullName() { return fullName; }
     public void setFullName(String fullName) { this.fullName = fullName; }
-    
-    public String getUsername() { return username; }
-    public void setUsername(String username) { this.username = username; }
     
     public LocalDate getBirthDate() { return birthDate; }
     public void setBirthDate(LocalDate birthDate) { this.birthDate = birthDate; }

@@ -4,17 +4,20 @@ import SmartInternshipApp.InternHubBackend.entity.Student;
 import java.time.LocalDate;
 
 public class RegistrationRequest {
+    private String name;
     private String fullName;
     private String email;
     private LocalDate birthDate;
     private Student.Gender gender;
-    private String username;
     private String password;
+    private String college;
+    private String course;
 
-    // Constructors
     public RegistrationRequest() {}
 
-    // Getters and Setters
+    public String getName() { return name; }
+    public void setName(String name) { this.name = name; }
+
     public String getFullName() { return fullName; }
     public void setFullName(String fullName) { this.fullName = fullName; }
 
@@ -27,9 +30,12 @@ public class RegistrationRequest {
     public Student.Gender getGender() { return gender; }
     public void setGender(Student.Gender gender) { this.gender = gender; }
 
-    public String getUsername() { return username; }
-    public void setUsername(String username) { this.username = username; }
-
     public String getPassword() { return password; }
     public void setPassword(String password) { this.password = password; }
+
+    public String getCollege() { return college; }
+    public void setCollege(String college) { this.college = college; }
+
+    public String getCourse() { return course; }
+    public void setCourse(String course) { this.course = course; }
 }

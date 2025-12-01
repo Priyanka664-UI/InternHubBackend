@@ -9,7 +9,7 @@ import org.springframework.web.bind.annotation.*;
 
 @RestController
 @RequestMapping("/api/auth")
-@CrossOrigin(origins = {"http://localhost:4200", "http://192.168.0.104:4200"})
+@CrossOrigin(origins = {"http://localhost:4200", "http://localhost:51108", "http://192.168.0.104:4200"})
 public class AuthController {
 
     @Autowired
@@ -19,23 +19,16 @@ public class AuthController {
     public ResponseEntity<String> register(@RequestBody RegistrationRequest request) {
         try {
             String result = authService.register(request);
-            if (result.equals("Registration successful")) {
-                return ResponseEntity.ok(result);
-            }
-            return ResponseEntity.badRequest().body(result);
+            return ResponseEntity.ok(result);
         } catch (Exception e) {
             return ResponseEntity.internalServerError().body("Registration failed: " + e.getMessage());
         }
     }
 
     @PostMapping("/login")
-    public ResponseEntity<String> login(@RequestBody LoginRequest request) {
+    public ResponseEntity<?> login(@RequestBody LoginRequest request) {
         try {
-            String result = authService.login(request);
-            if (result.equals("Login successful")) {
-                return ResponseEntity.ok(result);
-            }
-            return ResponseEntity.badRequest().body(result);
+            return authService.login(request);
         } catch (Exception e) {
             return ResponseEntity.internalServerError().body("Login failed: " + e.getMessage());
         }
