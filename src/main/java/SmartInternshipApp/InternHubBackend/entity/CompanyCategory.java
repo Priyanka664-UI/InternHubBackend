@@ -1,19 +1,19 @@
 package SmartInternshipApp.InternHubBackend.entity;
 
 public enum CompanyCategory {
-    TECHNOLOGY("Technology"),
-    FINANCE("Finance"),
-    HEALTHCARE("Healthcare"),
-    EDUCATION("Education"),
-    MANUFACTURING("Manufacturing"),
-    RETAIL("Retail"),
-    CONSULTING("Consulting"),
-    MEDIA("Media & Entertainment"),
-    GOVERNMENT("Government"),
-    NON_PROFIT("Non-Profit"),
-    STARTUP("Startup"),
-    MULTINATIONAL("Multinational Corporation"),
-    OTHER("Other");
+    SOFTWARE_DEVELOPMENT("Software Development"),
+    AI_ML("Artificial Intelligence / Machine Learning"),
+    DATA_SCIENCE("Data Science & Big Data Analytics"),
+    CLOUD_COMPUTING("Cloud Computing"),
+    CYBERSECURITY("Cybersecurity"),
+    EMBEDDED_IOT("Embedded Systems & IoT"),
+    ELECTRONICS_SEMICONDUCTOR("Electronics & Semiconductor"),
+    POWER_ELECTRICAL("Power & Electrical Systems"),
+    ROBOTICS_AUTOMATION("Robotics & Automation"),
+    AUTOMOTIVE_MANUFACTURING("Automotive & Manufacturing"),
+    CONSTRUCTION_INFRASTRUCTURE("Construction & Infrastructure"),
+    STRUCTURAL_CIVIL("Structural & Civil Engineering"),
+    TELECOMMUNICATIONS("Telecommunications & Networking");
 
     private final String displayName;
 

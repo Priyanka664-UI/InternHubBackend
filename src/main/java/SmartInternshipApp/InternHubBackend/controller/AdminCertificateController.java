@@ -13,7 +13,6 @@ import java.util.concurrent.ConcurrentHashMap;
 
 @RestController
 @RequestMapping("/api/admin/certificates")
-@CrossOrigin(originPatterns = "*")
 public class AdminCertificateController {
     
     private static final Map<String, Map<String, Object>> certificateStore = new ConcurrentHashMap<>();

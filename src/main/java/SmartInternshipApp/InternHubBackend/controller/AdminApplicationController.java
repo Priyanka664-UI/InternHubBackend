@@ -7,7 +7,6 @@ import java.util.ArrayList;
 
 @RestController
 @RequestMapping("/api/admin/applications")
-@CrossOrigin(originPatterns = "*")
 public class AdminApplicationController {
     
     @GetMapping

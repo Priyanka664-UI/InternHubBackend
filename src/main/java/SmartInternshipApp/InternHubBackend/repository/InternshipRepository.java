@@ -20,4 +20,8 @@ public interface InternshipRepository extends JpaRepository<Internship, Long> {
     List<Internship> findByCityId(Long cityId);
     List<Internship> findByWorkType(String workType);
     List<Internship> findByStateIdAndCityId(Long stateId, Long cityId);
+    List<Internship> findByCompanyId(Long companyId);
+    
+    @Query("SELECT i FROM Internship i WHERE LOWER(i.company) LIKE LOWER(CONCAT('%', :companyName, '%'))")
+    List<Internship> findByCompanyNameContaining(@Param("companyName") String companyName);
 }

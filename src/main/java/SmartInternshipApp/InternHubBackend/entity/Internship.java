@@ -34,6 +34,9 @@ public class Internship {
     @Column(name = "work_type")
     private String workType; // Remote, On-site, Hybrid
     
+    @Column(name = "company_id")
+    private Long companyId;
+    
     // Constructors
     public Internship() {}
     
@@ -70,4 +73,7 @@ public class Internship {
     
     public String getWorkType() { return workType; }
     public void setWorkType(String workType) { this.workType = workType; }
+    
+    public Long getCompanyId() { return companyId; }
+    public void setCompanyId(Long companyId) { this.companyId = companyId; }
 }

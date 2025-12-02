@@ -82,4 +82,12 @@ public class InternshipService {
         }
         return getAllInternships();
     }
+    
+    public List<Internship> getInternshipsByCompany(Long companyId, String companyName) {
+        List<Internship> internships = internshipRepository.findByCompanyId(companyId);
+        if (internships.isEmpty() && companyName != null && !companyName.trim().isEmpty()) {
+            internships = internshipRepository.findByCompanyNameContaining(companyName);
+        }
+        return internships;
+    }
 }

@@ -1,126 +1,132 @@
 package SmartInternshipApp.InternHubBackend.controller;
 
-import SmartInternshipApp.InternHubBackend.entity.Student;
-import SmartInternshipApp.InternHubBackend.service.StudentService;
+import SmartInternshipApp.InternHubBackend.entity.Course;
+import SmartInternshipApp.InternHubBackend.service.CourseService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
-import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 
 @RestController
-@RequestMapping("/api/admin/students")
-public class AdminStudentController {
+@RequestMapping("/api/admin/courses")
+public class AdminCourseController {
     
     @Autowired
-    private StudentService studentService;
+    private CourseService courseService;
     
     @GetMapping
-    public ResponseEntity<List<Student>> getAllStudents() {
+    public ResponseEntity<Map<String, Object>> getAllCourses() {
+        Map<String, Object> response = new HashMap<>();
         try {
-            return ResponseEntity.ok(studentService.getAllStudents());
+            List<Course> courses = courseService.getAllCourses();
+            response.put("success", true);
+            response.put("data", courses);
+            response.put("message", "Courses retrieved successfully");
+            return ResponseEntity.ok(response);
         } catch (Exception e) {
-            return ResponseEntity.ok(new ArrayList<>());
+            response.put("success", false);
+            response.put("message", "Error retrieving courses: " + e.getMessage());
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(response);
         }
     }
     
     @GetMapping("/{id}")
-    public ResponseEntity<Map<String, Object>> getStudentById(@PathVariable Long id) {
+    public ResponseEntity<Map<String, Object>> getCourseById(@PathVariable Long id) {
         Map<String, Object> response = new HashMap<>();
         try {
-            Optional<Student> student = studentService.getProfile(id);
-            if (student.isPresent()) {
+            Optional<Course> course = courseService.getCourseById(id);
+            if (course.isPresent()) {
                 response.put("success", true);
-                response.put("data", student.get());
-                response.put("message", "Student found");
+                response.put("data", course.get());
+                response.put("message", "Course found");
                 return ResponseEntity.ok(response);
             } else {
                 response.put("success", false);
-                response.put("message", "Student not found");
+                response.put("message", "Course not found");
                 return ResponseEntity.status(HttpStatus.NOT_FOUND).body(response);
             }
         } catch (Exception e) {
             response.put("success", false);
-            response.put("message", "Error retrieving student: " + e.getMessage());
+            response.put("message", "Error retrieving course: " + e.getMessage());
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(response);
         }
     }
     
     @PostMapping
-    public ResponseEntity<Map<String, Object>> createStudent(@RequestBody Student student) {
+    public ResponseEntity<Map<String, Object>> createCourse(@RequestBody Course course) {
         Map<String, Object> response = new HashMap<>();
         try {
-            Student savedStudent = studentService.createStudent(student);
+            Course savedCourse = courseService.createCourse(course);
             response.put("success", true);
-            response.put("data", savedStudent);
-            response.put("message", "Student created successfully");
+            response.put("data", savedCourse);
+            response.put("message", "Course created successfully");
             return ResponseEntity.status(HttpStatus.CREATED).body(response);
         } catch (Exception e) {
             response.put("success", false);
-            response.put("message", "Error creating student: " + e.getMessage());
+            response.put("message", "Error creating course: " + e.getMessage());
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(response);
         }
     }
     
     @PutMapping("/{id}")
-    public ResponseEntity<Map<String, Object>> updateStudent(@PathVariable Long id, @RequestBody Student student) {
+    public ResponseEntity<Map<String, Object>> updateCourse(@PathVariable Long id, @RequestBody Course course) {
         Map<String, Object> response = new HashMap<>();
         try {
-            Student updated = studentService.updateProfile(id, student);
+            Course updated = courseService.updateCourse(id, course);
             if (updated != null) {
                 response.put("success", true);
                 response.put("data", updated);
-                response.put("message", "Student updated successfully");
+                response.put("message", "Course updated successfully");
                 return ResponseEntity.ok(response);
             } else {
                 response.put("success", false);
-                response.put("message", "Student not found");
+                response.put("message", "Course not found");
                 return ResponseEntity.status(HttpStatus.NOT_FOUND).body(response);
             }
         } catch (Exception e) {
             response.put("success", false);
-            response.put("message", "Error updating student: " + e.getMessage());
+            response.put("message", "Error updating course: " + e.getMessage());
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(response);
         }
     }
     
     @DeleteMapping("/{id}")
-    public ResponseEntity<Map<String, Object>> deleteStudent(@PathVariable Long id) {
+    public ResponseEntity<Map<String, Object>> deleteCourse(@PathVariable Long id) {
         Map<String, Object> response = new HashMap<>();
         try {
-            boolean deleted = studentService.deleteProfile(id);
+            boolean deleted = courseService.deleteCourse(id);
             if (deleted) {
                 response.put("success", true);
-                response.put("message", "Student deleted successfully");
+                response.put("message", "Course deleted successfully");
                 return ResponseEntity.ok(response);
             } else {
                 response.put("success", false);
-                response.put("message", "Student not found");
+                response.put("message", "Course not found");
                 return ResponseEntity.status(HttpStatus.NOT_FOUND).body(response);
             }
         } catch (Exception e) {
             response.put("success", false);
-            response.put("message", "Error deleting student: " + e.getMessage());
+            response.put("message", "Error deleting course: " + e.getMessage());
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(response);
         }
     }
     
     @GetMapping("/search")
-    public ResponseEntity<Map<String, Object>> searchStudents(@RequestParam(required = false) String keyword) {
+    public ResponseEntity<Map<String, Object>> searchCourses(@RequestParam(required = false) String keyword) {
         Map<String, Object> response = new HashMap<>();
         try {
-            List<Student> students = studentService.searchStudents(keyword);
+            List<Course> courses = courseService.searchCourses(keyword);
             response.put("success", true);
-            response.put("data", students);
+            response.put("data", courses);
             response.put("message", "Search completed successfully");
             return ResponseEntity.ok(response);
         } catch (Exception e) {
             response.put("success", false);
-            response.put("message", "Error searching students: " + e.getMessage());
+            response.put("message", "Error searching courses: " + e.getMessage());
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(response);
         }
     }

@@ -11,7 +11,6 @@ import java.util.Optional;
 
 @RestController
 @RequestMapping("/api/admin/companies")
-@CrossOrigin(originPatterns = "*")
 public class AdminCompanyController {
     
     @Autowired

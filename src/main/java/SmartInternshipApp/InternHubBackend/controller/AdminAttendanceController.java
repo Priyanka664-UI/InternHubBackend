@@ -9,7 +9,6 @@ import java.util.HashMap;
 
 @RestController
 @RequestMapping("/api/admin/attendance")
-@CrossOrigin(originPatterns = "*")
 public class AdminAttendanceController {
     
     @GetMapping

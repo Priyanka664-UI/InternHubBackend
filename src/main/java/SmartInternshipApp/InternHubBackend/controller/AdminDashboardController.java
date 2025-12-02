@@ -9,7 +9,6 @@ import java.util.HashMap;
 
 @RestController
 @RequestMapping("/api/admin/dashboard")
-@CrossOrigin(originPatterns = "*")
 public class AdminDashboardController {
     
     @GetMapping("/stats")

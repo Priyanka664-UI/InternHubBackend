@@ -11,7 +11,6 @@ import java.util.List;
 
 @RestController
 @RequestMapping("/api/admin/locations")
-@CrossOrigin(originPatterns = "*")
 public class AdminLocationController {
     
     @Autowired

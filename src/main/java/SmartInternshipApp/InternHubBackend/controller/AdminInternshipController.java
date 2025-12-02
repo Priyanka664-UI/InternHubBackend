@@ -10,7 +10,6 @@ import java.util.Optional;
 
 @RestController
 @RequestMapping("/api/admin/internships")
-@CrossOrigin(originPatterns = "*")
 public class AdminInternshipController {
     
     @Autowired
