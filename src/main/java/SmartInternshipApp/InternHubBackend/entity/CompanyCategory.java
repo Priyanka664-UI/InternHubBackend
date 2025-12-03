@@ -1,27 +1,26 @@
 package SmartInternshipApp.InternHubBackend.entity;
 
-public enum CompanyCategory {
-    SOFTWARE_DEVELOPMENT("Software Development"),
-    AI_ML("Artificial Intelligence / Machine Learning"),
-    DATA_SCIENCE("Data Science & Big Data Analytics"),
-    CLOUD_COMPUTING("Cloud Computing"),
-    CYBERSECURITY("Cybersecurity"),
-    EMBEDDED_IOT("Embedded Systems & IoT"),
-    ELECTRONICS_SEMICONDUCTOR("Electronics & Semiconductor"),
-    POWER_ELECTRICAL("Power & Electrical Systems"),
-    ROBOTICS_AUTOMATION("Robotics & Automation"),
-    AUTOMOTIVE_MANUFACTURING("Automotive & Manufacturing"),
-    CONSTRUCTION_INFRASTRUCTURE("Construction & Infrastructure"),
-    STRUCTURAL_CIVIL("Structural & Civil Engineering"),
-    TELECOMMUNICATIONS("Telecommunications & Networking");
+import jakarta.persistence.*;
 
-    private final String displayName;
-
-    CompanyCategory(String displayName) {
-        this.displayName = displayName;
+@Entity
+@Table(name = "company_categories")
+public class CompanyCategory {
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    private Long id;
+    
+    @Column(unique = true, nullable = false)
+    private String name;
+    
+    public CompanyCategory() {}
+    
+    public CompanyCategory(String name) {
+        this.name = name;
     }
-
-    public String getDisplayName() {
-        return displayName;
-    }
+    
+    public Long getId() { return id; }
+    public void setId(Long id) { this.id = id; }
+    
+    public String getName() { return name; }
+    public void setName(String name) { this.name = name; }
 }

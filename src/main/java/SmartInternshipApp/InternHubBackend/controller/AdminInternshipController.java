@@ -16,7 +16,12 @@ public class AdminInternshipController {
     private InternshipService internshipService;
     
     @GetMapping
-    public ResponseEntity<List<Internship>> getAllInternships() {
+    public ResponseEntity<List<Internship>> getAllInternships(
+            @RequestParam(required = false) Long companyId,
+            @RequestParam(required = false) String companyName) {
+        if (companyId != null || companyName != null) {
+            return ResponseEntity.ok(internshipService.getInternshipsByCompany(companyId, companyName));
+        }
         return ResponseEntity.ok(internshipService.getAllInternships());
     }
     

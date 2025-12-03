@@ -25,8 +25,8 @@ public class Company {
     
     private String industry;
     
-    @Enumerated(EnumType.STRING)
-    @Column(name = "category")
+    @ManyToOne(fetch = FetchType.EAGER)
+    @JoinColumn(name = "category_id")
     private CompanyCategory category;
     
     @Column(length = 1000)

@@ -20,11 +20,19 @@ public class AdminStudentController {
     private StudentService studentService;
     
     @GetMapping
-    public ResponseEntity<List<Student>> getAllStudents() {
+    public ResponseEntity<Map<String, Object>> getAllStudents() {
+        Map<String, Object> response = new HashMap<>();
         try {
-            return ResponseEntity.ok(studentService.getAllStudents());
+            List<Student> students = studentService.getAllStudents();
+            response.put("success", true);
+            response.put("data", students);
+            response.put("message", "Students retrieved successfully");
+            return ResponseEntity.ok(response);
         } catch (Exception e) {
-            return ResponseEntity.ok(new ArrayList<>());
+            response.put("success", false);
+            response.put("data", new ArrayList<>());
+            response.put("message", "Error retrieving students: " + e.getMessage());
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(response);
         }
     }
     
@@ -120,6 +128,7 @@ public class AdminStudentController {
             return ResponseEntity.ok(response);
         } catch (Exception e) {
             response.put("success", false);
+            response.put("data", new ArrayList<>());
             response.put("message", "Error searching students: " + e.getMessage());
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(response);
         }

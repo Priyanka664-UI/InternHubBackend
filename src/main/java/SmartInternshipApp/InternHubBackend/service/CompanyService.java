@@ -92,4 +92,10 @@ public class CompanyService {
     public List<Company> getCompaniesByCategory(CompanyCategory category) {
         return companyRepository.findByCategory(category);
     }
+    
+    public List<Company> getCompaniesByCategoryId(Long categoryId) {
+        List<Company> companies = companyRepository.findByCategoryId(categoryId);
+        populateLocationNames(companies);
+        return companies;
+    }
 }

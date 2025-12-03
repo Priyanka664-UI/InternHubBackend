@@ -17,6 +17,9 @@ public interface CompanyRepository extends JpaRepository<Company, Long> {
     
     List<Company> findByCategory(CompanyCategory category);
     
+    @Query("SELECT c FROM Company c WHERE c.category.id = :categoryId")
+    List<Company> findByCategoryId(@Param("categoryId") Long categoryId);
+    
     @Query("SELECT c FROM Company c WHERE c.category = :category AND (" +
            "LOWER(c.name) LIKE LOWER(CONCAT('%', :keyword, '%')) OR " +
            "LOWER(c.industry) LIKE LOWER(CONCAT('%', :keyword, '%')))")
