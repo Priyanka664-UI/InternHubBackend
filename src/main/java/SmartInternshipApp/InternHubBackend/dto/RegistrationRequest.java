@@ -4,7 +4,6 @@ import SmartInternshipApp.InternHubBackend.entity.Student;
 import java.time.LocalDate;
 
 public class RegistrationRequest {
-    private String name;
     private String fullName;
     private String email;
     private LocalDate birthDate;
@@ -14,9 +13,6 @@ public class RegistrationRequest {
     private String course;
 
     public RegistrationRequest() {}
-
-    public String getName() { return name; }
-    public void setName(String name) { this.name = name; }
 
     public String getFullName() { return fullName; }
     public void setFullName(String fullName) { this.fullName = fullName; }

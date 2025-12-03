@@ -24,7 +24,7 @@ public class AuthService {
             }
             
             Student student = new Student();
-            student.setFullName(request.getFullName() != null ? request.getFullName() : request.getName());
+            student.setFullName(request.getFullName());
             student.setEmail(request.getEmail());
             student.setPassword(request.getPassword());
             student.setBirthDate(request.getBirthDate());
@@ -42,23 +42,29 @@ public class AuthService {
     
     public org.springframework.http.ResponseEntity<?> login(LoginRequest request) {
         try {
+            System.out.println("Login attempt for email: " + request.getEmail());
             Optional<Student> student = studentRepository.findByEmail(request.getEmail());
             
             if (student.isEmpty()) {
+                System.out.println("No student found with email: " + request.getEmail());
                 return org.springframework.http.ResponseEntity.badRequest().body("Invalid email or password");
             }
+            
+            System.out.println("Student found: " + student.get().getEmail() + ", verified: " + student.get().isVerified());
             
             if (!student.get().isVerified()) {
                 return org.springframework.http.ResponseEntity.badRequest().body("Email not verified");
             }
+            
+            System.out.println("Password check - Input: '" + request.getPassword() + "', Stored: '" + student.get().getPassword() + "'");
             
             if (!request.getPassword().equals(student.get().getPassword())) {
                 return org.springframework.http.ResponseEntity.badRequest().body("Invalid email or password");
             }
             
             java.util.Map<String, Object> response = new java.util.HashMap<>();
-            response.put("message", "Login successful");
-            response.put("userId", student.get().getId());
+            response.put("token", "temp-token-" + student.get().getId());
+            response.put("student", student.get());
             return org.springframework.http.ResponseEntity.ok(response);
         } catch (Exception e) {
             throw new RuntimeException("Login failed: " + e.getMessage());
