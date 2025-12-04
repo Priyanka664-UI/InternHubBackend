@@ -28,6 +28,18 @@ public class InternshipApplication {
     @Column(name = "cover_letter", length = 2000)
     private String coverLetter;
     
+    @Column(name = "college")
+    private String college;
+    
+    @Column(name = "degree")
+    private String degree;
+    
+    @Column(name = "year_of_study")
+    private String yearOfStudy;
+    
+    @Column(name = "student_id_url")
+    private String studentIdUrl;
+    
     @Column(name = "resume_url")
     private String resumeUrl;
     
@@ -59,4 +71,16 @@ public class InternshipApplication {
     
     public String getResumeUrl() { return resumeUrl; }
     public void setResumeUrl(String resumeUrl) { this.resumeUrl = resumeUrl; }
+    
+    public String getCollege() { return college; }
+    public void setCollege(String college) { this.college = college; }
+    
+    public String getDegree() { return degree; }
+    public void setDegree(String degree) { this.degree = degree; }
+    
+    public String getYearOfStudy() { return yearOfStudy; }
+    public void setYearOfStudy(String yearOfStudy) { this.yearOfStudy = yearOfStudy; }
+    
+    public String getStudentIdUrl() { return studentIdUrl; }
+    public void setStudentIdUrl(String studentIdUrl) { this.studentIdUrl = studentIdUrl; }
 }
