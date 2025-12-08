@@ -2,6 +2,7 @@ package SmartInternshipApp.InternHubBackend.repository;
 
 import SmartInternshipApp.InternHubBackend.entity.InternshipApplication;
 import SmartInternshipApp.InternHubBackend.entity.InternshipApplication.ApplicationStatus;
+import SmartInternshipApp.InternHubBackend.entity.Student;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.stereotype.Repository;
@@ -10,6 +11,7 @@ import java.util.List;
 @Repository
 public interface InternshipApplicationRepository extends JpaRepository<InternshipApplication, Long> {
     List<InternshipApplication> findByStudentId(Long studentId);
+    List<InternshipApplication> findByStudent(Student student);
     List<InternshipApplication> findByInternshipId(Long internshipId);
     List<InternshipApplication> findByStatus(ApplicationStatus status);
     

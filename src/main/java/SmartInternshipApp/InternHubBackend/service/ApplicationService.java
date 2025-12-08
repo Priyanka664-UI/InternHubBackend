@@ -58,15 +58,23 @@ public class ApplicationService {
                 college, degree, yearOfStudy);
         application.setCoverLetter(coverLetter);
 
+        application.setCollege(college);
+        application.setDegree(degree);
+        application.setYearOfStudy(yearOfStudy);
+        
         InternshipApplication savedApp = applicationRepository.save(application);
 
         if (studentIdFile != null && !studentIdFile.isEmpty()) {
-            saveFile(studentIdFile, savedApp.getId(), "studentId");
+            String studentIdUrl = saveFile(studentIdFile, savedApp.getId(), "studentId");
+            savedApp.setStudentIdUrl(studentIdUrl);
         }
 
         if (resumeFile != null && !resumeFile.isEmpty()) {
-            saveFile(resumeFile, savedApp.getId(), "resume");
+            String resumeUrl = saveFile(resumeFile, savedApp.getId(), "resume");
+            savedApp.setResumeUrl(resumeUrl);
         }
+        
+        applicationRepository.save(savedApp);
     }
 
     private Long extractStudentIdFromToken(String token) {

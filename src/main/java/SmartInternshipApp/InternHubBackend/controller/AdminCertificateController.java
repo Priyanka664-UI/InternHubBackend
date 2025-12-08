@@ -1,7 +1,17 @@
 package SmartInternshipApp.InternHubBackend.controller;
 
+import SmartInternshipApp.InternHubBackend.entity.Certificate;
+import SmartInternshipApp.InternHubBackend.service.CertificateService;
+import SmartInternshipApp.InternHubBackend.service.CertificatePdfService;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.core.io.FileSystemResource;
+import org.springframework.core.io.Resource;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import java.io.File;
 import java.util.List;
 import java.util.ArrayList;
 import java.util.Map;
@@ -10,10 +20,17 @@ import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.UUID;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.stream.Collectors;
 
 @RestController
 @RequestMapping("/api/admin/certificates")
 public class AdminCertificateController {
+    
+    @Autowired private CertificateService certificateService;
+    @Autowired private CertificatePdfService pdfService;
+    
+    @Value("${file.upload.dir}")
+    private String uploadDir;
     
     private static final Map<String, Map<String, Object>> certificateStore = new ConcurrentHashMap<>();
     
@@ -29,8 +46,23 @@ public class AdminCertificateController {
     }
     
     @GetMapping
-    public ResponseEntity<List<Object>> getAllCertificates() {
-        return ResponseEntity.ok(new ArrayList<>());
+    public ResponseEntity<List<Map<String, Object>>> getAllCertificates() {
+        List<Certificate> certificates = certificateService.getAllCertificates();
+        List<Map<String, Object>> response = certificates.stream().map(cert -> {
+            Map<String, Object> map = new HashMap<>();
+            map.put("id", cert.getId());
+            map.put("certificateNumber", cert.getCertificateNumber());
+            map.put("studentName", cert.getStudent().getFullName());
+            map.put("studentEmail", cert.getStudent().getEmail());
+            map.put("internshipTitle", cert.getInternship().getTitle());
+            map.put("companyName", cert.getInternship().getCompany());
+            map.put("issueDate", cert.getIssueDate());
+            map.put("completionDate", cert.getCompletionDate());
+            map.put("performanceRating", cert.getPerformanceRating());
+            map.put("certificateUrl", cert.getCertificateUrl());
+            return map;
+        }).collect(Collectors.toList());
+        return ResponseEntity.ok(response);
     }
     
     @GetMapping("/student/{studentId}")
@@ -68,8 +100,42 @@ public class AdminCertificateController {
     }
     
     @PostMapping("/issue")
-    public ResponseEntity<Object> issueCertificate(@RequestBody Map<String, Object> request) {
-        return ResponseEntity.ok(new HashMap<>());
+    public ResponseEntity<Map<String, Object>> issueCertificate(@RequestBody Map<String, Object> request) {
+        Long studentId = Long.valueOf(request.get("studentId").toString());
+        Long internshipId = Long.valueOf(request.get("internshipId").toString());
+        Integer rating = request.get("rating") != null ? Integer.valueOf(request.get("rating").toString()) : 5;
+        String remarks = (String) request.get("remarks");
+        
+        Certificate certificate = certificateService.issueCertificate(studentId, internshipId, rating, remarks);
+        
+        Map<String, Object> response = new HashMap<>();
+        response.put("id", certificate.getId());
+        response.put("certificateNumber", certificate.getCertificateNumber());
+        response.put("certificateUrl", certificate.getCertificateUrl());
+        response.put("message", "Certificate issued successfully");
+        
+        return ResponseEntity.ok(response);
+    }
+    
+    @GetMapping("/download/{certificateNumber}")
+    public ResponseEntity<Resource> downloadCertificate(@PathVariable String certificateNumber) {
+        try {
+            String certDir = uploadDir.replace("applications", "certificates");
+            File pdfFile = new File(certDir, certificateNumber + ".pdf");
+            
+            if (!pdfFile.exists()) {
+                return ResponseEntity.notFound().build();
+            }
+            
+            Resource resource = new FileSystemResource(pdfFile);
+            
+            return ResponseEntity.ok()
+                .contentType(MediaType.APPLICATION_PDF)
+                .header(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=\"" + certificateNumber + ".pdf\"")
+                .body(resource);
+        } catch (Exception e) {
+            return ResponseEntity.internalServerError().build();
+        }
     }
     
     @DeleteMapping("/{certificateId}")
