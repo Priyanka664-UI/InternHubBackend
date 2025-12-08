@@ -21,6 +21,9 @@ public class AdminApplicationController {
     @Autowired
     private CertificateService certificateService;
     
+    @Autowired
+    private SmartInternshipApp.InternHubBackend.service.NotificationService notificationService;
+    
     @GetMapping
     public ResponseEntity<List<InternshipApplication>> getAllApplications() {
         return ResponseEntity.ok(applicationRepository.findAll());
@@ -46,8 +49,23 @@ public class AdminApplicationController {
         application.setStatus(ApplicationStatus.valueOf(newStatus));
         applicationRepository.save(application);
         
+        String internshipTitle = application.getInternship().getTitle();
+        Long studentId = application.getStudent().getId();
+        
+        if ("ACCEPTED".equals(newStatus)) {
+            notificationService.createNotification(studentId, "Application Accepted", 
+                "Congratulations! Your application for " + internshipTitle + " has been accepted.", "SUCCESS");
+        } else if ("REJECTED".equals(newStatus)) {
+            notificationService.createNotification(studentId, "Application Rejected", 
+                "Your application for " + internshipTitle + " has been rejected.", "ERROR");
+        } else if ("COMPLETED".equals(newStatus)) {
+            notificationService.createNotification(studentId, "Internship Completed", 
+                "You have successfully completed the internship: " + internshipTitle, "SUCCESS");
+        }
+        
         Map<String, Object> response = new HashMap<>();
         response.put("application", application);
+        response.put("notificationSent", true);
         
         if ("COMPLETED".equals(newStatus)) {
             try {

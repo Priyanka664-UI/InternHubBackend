@@ -1,6 +1,9 @@
 package SmartInternshipApp.InternHubBackend.entity;
 
+import com.fasterxml.jackson.annotation.JsonBackReference;
 import jakarta.persistence.*;
+import java.util.HashSet;
+import java.util.Set;
 
 @Entity
 @Table(name = "courses")
@@ -17,6 +20,10 @@ public class Course {
     @Column(name = "duration_months")
     private Integer durationMonths;
     
+    @ManyToMany(mappedBy = "courses")
+    @JsonBackReference
+    private Set<CourseCategory> categories = new HashSet<>();
+    
     public Course() {}
     
     public Long getId() { return id; }
@@ -30,4 +37,7 @@ public class Course {
     
     public Integer getDurationMonths() { return durationMonths; }
     public void setDurationMonths(Integer durationMonths) { this.durationMonths = durationMonths; }
+    
+    public Set<CourseCategory> getCategories() { return categories; }
+    public void setCategories(Set<CourseCategory> categories) { this.categories = categories; }
 }
