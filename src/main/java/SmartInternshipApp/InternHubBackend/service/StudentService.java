@@ -2,6 +2,7 @@ package SmartInternshipApp.InternHubBackend.service;
 
 import SmartInternshipApp.InternHubBackend.entity.Student;
 import SmartInternshipApp.InternHubBackend.repository.StudentRepository;
+import SmartInternshipApp.InternHubBackend.dto.PasswordChangeRequest;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -55,5 +56,18 @@ public class StudentService {
             return getAllStudents();
         }
         return studentRepository.findByKeyword(keyword.trim());
+    }
+    
+    public boolean changePassword(Long id, PasswordChangeRequest request) {
+        Optional<Student> existing = studentRepository.findById(id);
+        if (existing.isPresent()) {
+            Student student = existing.get();
+            if (student.getPassword().equals(request.getCurrentPassword())) {
+                student.setPassword(request.getNewPassword());
+                studentRepository.save(student);
+                return true;
+            }
+        }
+        return false;
     }
 }

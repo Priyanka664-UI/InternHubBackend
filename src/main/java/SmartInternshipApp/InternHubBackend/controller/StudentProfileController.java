@@ -2,6 +2,7 @@ package SmartInternshipApp.InternHubBackend.controller;
 
 import SmartInternshipApp.InternHubBackend.entity.Student;
 import SmartInternshipApp.InternHubBackend.service.StudentService;
+import SmartInternshipApp.InternHubBackend.dto.PasswordChangeRequest;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -30,5 +31,11 @@ public class StudentProfileController {
     public ResponseEntity<String> deleteProfile(@PathVariable Long id) {
         boolean deleted = studentService.deleteProfile(id);
         return deleted ? ResponseEntity.ok("Profile deleted successfully") : ResponseEntity.notFound().build();
+    }
+    
+    @PutMapping("/{id}/password")
+    public ResponseEntity<String> changePassword(@PathVariable Long id, @RequestBody PasswordChangeRequest request) {
+        boolean changed = studentService.changePassword(id, request);
+        return changed ? ResponseEntity.ok("Password changed successfully") : ResponseEntity.badRequest().body("Invalid current password");
     }
 }

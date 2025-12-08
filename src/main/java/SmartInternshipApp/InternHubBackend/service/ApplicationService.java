@@ -32,6 +32,9 @@ public class ApplicationService {
     @Value("${file.upload.dir}")
     private String uploadDir;
 
+    @Autowired
+    private NotificationService notificationService;
+
     public void submitApplication(Long internshipId, String college, String degree, 
                                    String yearOfStudy, MultipartFile studentIdFile, 
                                    MultipartFile resumeFile, String token) throws Exception {
@@ -61,7 +64,14 @@ public class ApplicationService {
         application.setCollege(college);
         application.setDegree(degree);
         application.setYearOfStudy(yearOfStudy);
-        
+         
+        notificationService.createNotification(
+            studentId,
+            "Application Submitted",
+            "Your application for " + internship.getTitle() + " has been submitted successfully.",
+            "SUCCESS"
+        );
+
         InternshipApplication savedApp = applicationRepository.save(application);
 
         if (studentIdFile != null && !studentIdFile.isEmpty()) {
