@@ -37,6 +37,9 @@ public class Internship {
     @Column(name = "company_id")
     private Long companyId;
     
+    @Column(name = "is_paid")
+    private Boolean isPaid;
+    
     // Constructors
     public Internship() {}
     
@@ -76,4 +79,7 @@ public class Internship {
     
     public Long getCompanyId() { return companyId; }
     public void setCompanyId(Long companyId) { this.companyId = companyId; }
+    
+    public Boolean getIsPaid() { return isPaid; }
+    public void setIsPaid(Boolean isPaid) { this.isPaid = isPaid; }
 }

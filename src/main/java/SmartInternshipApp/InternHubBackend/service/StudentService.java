@@ -44,7 +44,7 @@ public class StudentService {
     }
     
     public List<Student> getAllStudents() {
-        return studentRepository.findAll();
+        return studentRepository.findAll(org.springframework.data.domain.Sort.by(org.springframework.data.domain.Sort.Direction.ASC, "id"));
     }
     
     public Student createStudent(Student student) {

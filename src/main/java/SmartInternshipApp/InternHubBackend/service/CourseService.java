@@ -16,7 +16,7 @@ public class CourseService {
     private CourseRepository courseRepository;
     
     public List<Course> getAllCourses() {
-        return courseRepository.findAll();
+        return courseRepository.findAll(org.springframework.data.domain.Sort.by(org.springframework.data.domain.Sort.Direction.ASC, "id"));
     }
     
     public Optional<Course> getCourseById(Long id) {

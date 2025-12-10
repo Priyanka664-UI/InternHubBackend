@@ -74,7 +74,7 @@ public class CertificateService {
     }
     
     public List<Certificate> getAllCertificates() {
-        return certificateRepository.findAll();
+        return certificateRepository.findAll(org.springframework.data.domain.Sort.by(org.springframework.data.domain.Sort.Direction.ASC, "id"));
     }
     
     public List<Certificate> getCertificatesByStudent(Long studentId) {

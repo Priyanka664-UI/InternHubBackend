@@ -14,7 +14,7 @@ public class InternshipService {
     private InternshipRepository internshipRepository;
     
     public List<Internship> getAllInternships() {
-        return internshipRepository.findAll();
+        return internshipRepository.findAll(org.springframework.data.domain.Sort.by(org.springframework.data.domain.Sort.Direction.ASC, "id"));
     }
     
     public List<Internship> searchInternships(String keyword) {
@@ -46,6 +46,7 @@ public class InternshipService {
             internship.setStateId(internshipDetails.getStateId());
             internship.setCityId(internshipDetails.getCityId());
             internship.setWorkType(internshipDetails.getWorkType());
+            internship.setIsPaid(internshipDetails.getIsPaid());
             return internshipRepository.save(internship);
         }
         return null;

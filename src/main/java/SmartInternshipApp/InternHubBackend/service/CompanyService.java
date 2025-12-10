@@ -23,7 +23,7 @@ public class CompanyService {
     private CityRepository cityRepository;
     
     public List<Company> getAllCompanies() {
-        List<Company> companies = companyRepository.findAll();
+        List<Company> companies = companyRepository.findAll(org.springframework.data.domain.Sort.by(org.springframework.data.domain.Sort.Direction.ASC, "id"));
         populateLocationNames(companies);
         return companies;
     }
