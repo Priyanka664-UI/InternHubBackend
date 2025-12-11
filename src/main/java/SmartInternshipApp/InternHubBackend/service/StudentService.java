@@ -47,8 +47,20 @@ public class StudentService {
         return studentRepository.findAll(org.springframework.data.domain.Sort.by(org.springframework.data.domain.Sort.Direction.ASC, "id"));
     }
     
+    public Optional<Student> getStudentById(Long id) {
+        return studentRepository.findById(id);
+    }
+    
+    public Student saveStudent(Student student) {
+        return studentRepository.save(student);
+    }
+    
     public Student createStudent(Student student) {
         return studentRepository.save(student);
+    }
+    
+    public void deleteStudent(Long id) {
+        studentRepository.deleteById(id);
     }
     
     public List<Student> searchStudents(String keyword) {
