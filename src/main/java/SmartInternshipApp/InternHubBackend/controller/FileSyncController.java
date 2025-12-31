@@ -14,6 +14,7 @@ import java.util.Map;
 
 @RestController
 @RequestMapping("/api/admin/sync")
+@CrossOrigin(origins = "*")
 public class FileSyncController {
 
     @Autowired
@@ -27,18 +28,25 @@ public class FileSyncController {
         File folder = new File(uploadDir);
         List<Map<String, Object>> documents = new java.util.ArrayList<>();
         
+        System.out.println("Looking for documents in: " + uploadDir);
+        
         if (!folder.exists() || !folder.isDirectory()) {
+            System.out.println("Upload directory does not exist or is not a directory: " + uploadDir);
             return ResponseEntity.ok(documents);
         }
 
         File[] files = folder.listFiles();
         if (files == null) {
+            System.out.println("No files found in directory: " + uploadDir);
             return ResponseEntity.ok(documents);
         }
 
+        System.out.println("Found " + files.length + " files in directory");
+        
         for (File file : files) {
             if (file.isFile()) {
                 String fileName = file.getName();
+                System.out.println("Processing file: " + fileName);
                 String[] parts = fileName.split("_");
                 
                 Map<String, Object> doc = new HashMap<>();
@@ -58,16 +66,23 @@ public class FileSyncController {
                         }
                         doc.put("type", parts[1]);
                     } catch (Exception e) {
+                        System.out.println("Error parsing filename: " + fileName + ", error: " + e.getMessage());
                         doc.put("applicationId", null);
                         doc.put("studentId", null);
                         doc.put("type", "unknown");
                     }
+                } else {
+                    System.out.println("Filename does not match expected pattern: " + fileName);
+                    doc.put("applicationId", null);
+                    doc.put("studentId", null);
+                    doc.put("type", "unknown");
                 }
                 
                 documents.add(doc);
             }
         }
         
+        System.out.println("Returning " + documents.size() + " documents");
         return ResponseEntity.ok(documents);
     }
 }
