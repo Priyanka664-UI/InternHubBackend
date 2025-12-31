@@ -64,13 +64,6 @@ public class ApplicationService {
         application.setCollege(college);
         application.setDegree(degree);
         application.setYearOfStudy(yearOfStudy);
-         
-        notificationService.createNotification(
-            studentId,
-            "Application Submitted",
-            "Your application for " + internship.getTitle() + " has been submitted successfully.",
-            "SUCCESS"
-        );
 
         InternshipApplication savedApp = applicationRepository.save(application);
 
@@ -85,6 +78,17 @@ public class ApplicationService {
         }
         
         applicationRepository.save(savedApp);
+         
+        try {
+            notificationService.createNotification(
+                studentId,
+                "Application Submitted",
+                "Your application for " + internship.getTitle() + " has been submitted successfully.",
+                "SUCCESS"
+            );
+        } catch (Exception e) {
+            System.err.println("Failed to create notification: " + e.getMessage());
+        }
     }
 
     private Long extractStudentIdFromToken(String token) {
@@ -95,14 +99,14 @@ public class ApplicationService {
     }
 
     private String saveFile(MultipartFile file, Long applicationId, String type) throws Exception {
-        File dir = new File(uploadDir);
-        if (!dir.exists()) {
-            dir.mkdirs();
+        Path dirPath = Paths.get(uploadDir);
+        if (!Files.exists(dirPath)) {
+            Files.createDirectories(dirPath);
         }
 
         String fileName = "app" + applicationId + "_" + type + "_" + System.currentTimeMillis() + 
                 "_" + file.getOriginalFilename();
-        Path filePath = Paths.get(uploadDir, fileName);
+        Path filePath = dirPath.resolve(fileName);
         Files.write(filePath, file.getBytes());
         
         return fileName;

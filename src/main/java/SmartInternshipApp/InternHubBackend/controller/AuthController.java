@@ -9,6 +9,7 @@ import org.springframework.web.bind.annotation.*;
 
 @RestController
 @RequestMapping("/api/auth")
+@CrossOrigin(origins = "*", allowedHeaders = "*", methods = {RequestMethod.GET, RequestMethod.POST, RequestMethod.PUT, RequestMethod.DELETE, RequestMethod.OPTIONS})
 public class AuthController {
 
     @Autowired
@@ -28,6 +29,24 @@ public class AuthController {
     public ResponseEntity<?> login(@RequestBody LoginRequest request) {
         try {
             return authService.login(request);
+        } catch (Exception e) {
+            return ResponseEntity.internalServerError().body("Login failed: " + e.getMessage());
+        }
+    }
+    
+    @PostMapping("/admin/login")
+    public ResponseEntity<?> adminLogin(@RequestBody LoginRequest request) {
+        try {
+            return authService.adminLogin(request);
+        } catch (Exception e) {
+            return ResponseEntity.internalServerError().body("Login failed: " + e.getMessage());
+        }
+    }
+    
+    @PostMapping("/company/login")
+    public ResponseEntity<?> companyLogin(@RequestBody LoginRequest request) {
+        try {
+            return authService.companyLogin(request);
         } catch (Exception e) {
             return ResponseEntity.internalServerError().body("Login failed: " + e.getMessage());
         }

@@ -81,5 +81,54 @@ public class AuthService {
         return "Email verified successfully";
     }
     
-
+    public org.springframework.http.ResponseEntity<?> adminLogin(LoginRequest request) {
+        try {
+            Optional<Student> student = studentRepository.findByEmail(request.getEmail());
+            
+            if (student.isEmpty()) {
+                return org.springframework.http.ResponseEntity.badRequest().body("Invalid email or password");
+            }
+            
+            if (!request.getPassword().equals(student.get().getPassword())) {
+                return org.springframework.http.ResponseEntity.badRequest().body("Invalid email or password");
+            }
+            
+            if (student.get().getIsAdmin() == null || (student.get().getIsAdmin() != 1 && student.get().getIsAdmin() != 2)) {
+                return org.springframework.http.ResponseEntity.status(403).body("You are not admin");
+            }
+            
+            java.util.Map<String, Object> response = new java.util.HashMap<>();
+            response.put("token", "admin-token-" + student.get().getId());
+            response.put("student", student.get());
+            response.put("adminType", student.get().getIsAdmin());
+            return org.springframework.http.ResponseEntity.ok(response);
+        } catch (Exception e) {
+            throw new RuntimeException("Admin login failed: " + e.getMessage());
+        }
+    }
+    
+    public org.springframework.http.ResponseEntity<?> companyLogin(LoginRequest request) {
+        try {
+            Optional<Student> student = studentRepository.findByEmail(request.getEmail());
+            
+            if (student.isEmpty()) {
+                return org.springframework.http.ResponseEntity.badRequest().body("Invalid email or password");
+            }
+            
+            if (!request.getPassword().equals(student.get().getPassword())) {
+                return org.springframework.http.ResponseEntity.badRequest().body("Invalid email or password");
+            }
+            
+            if (student.get().getIsAdmin() == null || student.get().getIsAdmin() != 2) {
+                return org.springframework.http.ResponseEntity.status(403).body("You are not authorized as company admin");
+            }
+            
+            java.util.Map<String, Object> response = new java.util.HashMap<>();
+            response.put("token", "company-token-" + student.get().getId());
+            response.put("student", student.get());
+            return org.springframework.http.ResponseEntity.ok(response);
+        } catch (Exception e) {
+            throw new RuntimeException("Company login failed: " + e.getMessage());
+        }
+    }
 }

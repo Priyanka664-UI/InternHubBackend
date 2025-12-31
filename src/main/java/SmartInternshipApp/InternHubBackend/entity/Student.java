@@ -34,6 +34,9 @@ public class Student {
     @Column(name = "verification_token")
     private String verificationToken;
     
+    @Column(name = "is_admin")
+    private Integer isAdmin = 0;
+    
     // Constructors
     public Student() {}
     
@@ -67,6 +70,9 @@ public class Student {
     
     public String getVerificationToken() { return verificationToken; }
     public void setVerificationToken(String verificationToken) { this.verificationToken = verificationToken; }
+    
+    public Integer getIsAdmin() { return isAdmin; }
+    public void setIsAdmin(Integer isAdmin) { this.isAdmin = isAdmin; }
     
     public enum Gender {
         MALE, FEMALE

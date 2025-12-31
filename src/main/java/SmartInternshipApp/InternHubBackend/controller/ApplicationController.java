@@ -24,14 +24,21 @@ public class ApplicationController {
             @RequestHeader(value = "Authorization", required = false) String token) {
         
         try {
+            System.out.println("=== Application Submission Started ===");
             System.out.println("Received application: internshipId=" + internshipId);
             System.out.println("College: " + college + ", Degree: " + degree + ", Year: " + yearOfStudy);
             System.out.println("Token: " + (token != null ? "Present" : "Missing"));
+            System.out.println("StudentId file: " + (studentIdFile != null ? studentIdFile.getOriginalFilename() : "null"));
+            System.out.println("Resume file: " + (resumeFile != null ? resumeFile.getOriginalFilename() : "null"));
             
             applicationService.submitApplication(internshipId, college, degree, yearOfStudy, 
                     studentIdFile, resumeFile, token);
+            
+            System.out.println("=== Application Submitted Successfully ===");
             return ResponseEntity.ok().body("{\"message\": \"Application submitted successfully\"}");
         } catch (Exception e) {
+            System.err.println("=== Application Submission Failed ===");
+            System.err.println("Error: " + e.getMessage());
             e.printStackTrace();
             return ResponseEntity.badRequest().body("{\"message\": \"" + e.getMessage() + "\"}");
         }

@@ -13,6 +13,7 @@ public class InternHubBackendApplication {
 	public static void main(String[] args) {
 		SpringApplication.run(InternHubBackendApplication.class, args);
 	}
+	
 
 }
 
