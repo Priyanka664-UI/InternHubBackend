@@ -2,74 +2,96 @@ package SmartInternshipApp.InternHubBackend.entity;
 
 import jakarta.persistence.*;
 import java.time.LocalDate;
-import java.time.LocalTime;
+import java.time.LocalDateTime;
 
 @Entity
 @Table(name = "attendance")
 public class Attendance {
+    
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
     
-    @ManyToOne
-    @JoinColumn(name = "student_id", nullable = false)
-    private Student student;
+    @Column(name = "user_id", nullable = false)
+    private Long userId;
     
-    @ManyToOne
-    @JoinColumn(name = "internship_id", nullable = false)
-    private Internship internship;
+    @Column(name = "group_id", nullable = false)
+    private Long groupId;
     
-    @Column(nullable = false)
+    @Column(name = "date", nullable = false)
     private LocalDate date;
     
     @Column(name = "check_in_time")
-    private LocalTime checkInTime;
+    private LocalDateTime checkInTime;
     
     @Column(name = "check_out_time")
-    private LocalTime checkOutTime;
+    private LocalDateTime checkOutTime;
+    
+    @Column(name = "total_hours")
+    private Double totalHours;
     
     @Enumerated(EnumType.STRING)
-    @Column(nullable = false)
+    @Column(name = "status", nullable = false)
     private AttendanceStatus status = AttendanceStatus.ABSENT;
     
-    @Column(length = 500)
-    private String remarks;
+    @Column(name = "notes")
+    private String notes;
     
-    @Column(name = "hours_worked")
-    private Double hoursWorked;
+    @Column(name = "is_manual", nullable = false)
+    private Boolean isManual = false;
+    
+    @Column(name = "created_at", nullable = false)
+    private LocalDateTime createdAt;
+    
+    @PrePersist
+    protected void onCreate() {
+        createdAt = LocalDateTime.now();
+    }
     
     public enum AttendanceStatus {
-        PRESENT, ABSENT, LATE, HALF_DAY, LEAVE
+        PRESENT, ABSENT, LATE, HALF_DAY
     }
     
     // Constructors
     public Attendance() {}
     
+    public Attendance(Long userId, Long groupId, LocalDate date) {
+        this.userId = userId;
+        this.groupId = groupId;
+        this.date = date;
+    }
+    
     // Getters and Setters
     public Long getId() { return id; }
     public void setId(Long id) { this.id = id; }
     
-    public Student getStudent() { return student; }
-    public void setStudent(Student student) { this.student = student; }
+    public Long getUserId() { return userId; }
+    public void setUserId(Long userId) { this.userId = userId; }
     
-    public Internship getInternship() { return internship; }
-    public void setInternship(Internship internship) { this.internship = internship; }
+    public Long getGroupId() { return groupId; }
+    public void setGroupId(Long groupId) { this.groupId = groupId; }
     
     public LocalDate getDate() { return date; }
     public void setDate(LocalDate date) { this.date = date; }
     
-    public LocalTime getCheckInTime() { return checkInTime; }
-    public void setCheckInTime(LocalTime checkInTime) { this.checkInTime = checkInTime; }
+    public LocalDateTime getCheckInTime() { return checkInTime; }
+    public void setCheckInTime(LocalDateTime checkInTime) { this.checkInTime = checkInTime; }
     
-    public LocalTime getCheckOutTime() { return checkOutTime; }
-    public void setCheckOutTime(LocalTime checkOutTime) { this.checkOutTime = checkOutTime; }
+    public LocalDateTime getCheckOutTime() { return checkOutTime; }
+    public void setCheckOutTime(LocalDateTime checkOutTime) { this.checkOutTime = checkOutTime; }
+    
+    public Double getTotalHours() { return totalHours; }
+    public void setTotalHours(Double totalHours) { this.totalHours = totalHours; }
     
     public AttendanceStatus getStatus() { return status; }
     public void setStatus(AttendanceStatus status) { this.status = status; }
     
-    public String getRemarks() { return remarks; }
-    public void setRemarks(String remarks) { this.remarks = remarks; }
+    public String getNotes() { return notes; }
+    public void setNotes(String notes) { this.notes = notes; }
     
-    public Double getHoursWorked() { return hoursWorked; }
-    public void setHoursWorked(Double hoursWorked) { this.hoursWorked = hoursWorked; }
+    public Boolean getIsManual() { return isManual; }
+    public void setIsManual(Boolean isManual) { this.isManual = isManual; }
+    
+    public LocalDateTime getCreatedAt() { return createdAt; }
+    public void setCreatedAt(LocalDateTime createdAt) { this.createdAt = createdAt; }
 }

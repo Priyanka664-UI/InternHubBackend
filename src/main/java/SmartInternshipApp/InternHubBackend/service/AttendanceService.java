@@ -1,76 +1,107 @@
 package SmartInternshipApp.InternHubBackend.service;
 
-import SmartInternshipApp.InternHubBackend.entity.*;
-import SmartInternshipApp.InternHubBackend.repository.*;
+import SmartInternshipApp.InternHubBackend.entity.Attendance;
+import SmartInternshipApp.InternHubBackend.entity.Attendance.AttendanceStatus;
+import SmartInternshipApp.InternHubBackend.repository.AttendanceRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
-import java.time.LocalDate;
-import java.time.LocalTime;
+
 import java.time.Duration;
+import java.time.LocalDate;
+import java.time.LocalDateTime;
+import java.util.ArrayList;
 import java.util.List;
-import java.util.Map;
-import java.util.HashMap;
+import java.util.Optional;
 
 @Service
 public class AttendanceService {
     
-    @Autowired private AttendanceRepository attendanceRepository;
-    @Autowired private StudentRepository studentRepository;
-    @Autowired private InternshipRepository internshipRepository;
+    @Autowired
+    private AttendanceRepository attendanceRepository;
     
-    public Attendance markAttendance(Long studentId, Long internshipId, LocalDate date, 
-                                   LocalTime checkIn, LocalTime checkOut, Attendance.AttendanceStatus status) {
-        Student student = studentRepository.findById(studentId)
-            .orElseThrow(() -> new RuntimeException("Student not found"));
-        Internship internship = internshipRepository.findById(internshipId)
-            .orElseThrow(() -> new RuntimeException("Internship not found"));
+    public Attendance checkIn(Long userId, Long groupId) {
+        LocalDate today = LocalDate.now();
+        Optional<Attendance> existing = attendanceRepository.findByUserIdAndDate(userId, today);
         
-        Attendance attendance = new Attendance();
-        attendance.setStudent(student);
-        attendance.setInternship(internship);
-        attendance.setDate(date);
-        attendance.setCheckInTime(checkIn);
-        attendance.setCheckOutTime(checkOut);
-        attendance.setStatus(status);
+        if (existing.isPresent()) {
+            throw new RuntimeException("Already checked in today");
+        }
         
-        if (checkIn != null && checkOut != null) {
-            Duration duration = Duration.between(checkIn, checkOut);
-            attendance.setHoursWorked(duration.toMinutes() / 60.0);
+        Attendance attendance = new Attendance(userId, groupId, today);
+        attendance.setCheckInTime(LocalDateTime.now());
+        attendance.setStatus(AttendanceStatus.PRESENT);
+        
+        return attendanceRepository.save(attendance);
+    }
+    
+    public Attendance checkOut(Long userId) {
+        LocalDate today = LocalDate.now();
+        Optional<Attendance> existing = attendanceRepository.findByUserIdAndDate(userId, today);
+        
+        if (!existing.isPresent()) {
+            throw new RuntimeException("No check-in found for today");
+        }
+        
+        Attendance attendance = existing.get();
+        if (attendance.getCheckOutTime() != null) {
+            throw new RuntimeException("Already checked out today");
+        }
+        
+        attendance.setCheckOutTime(LocalDateTime.now());
+        
+        // Calculate total hours
+        if (attendance.getCheckInTime() != null) {
+            Duration duration = Duration.between(attendance.getCheckInTime(), attendance.getCheckOutTime());
+            double hours = duration.toMinutes() / 60.0;
+            attendance.setTotalHours(Math.round(hours * 100.0) / 100.0);
         }
         
         return attendanceRepository.save(attendance);
     }
     
-    public List<Attendance> getAttendanceByStudent(Long studentId) {
-        return attendanceRepository.findByStudentId(studentId);
-    }
-    
-    public List<Attendance> getAttendanceByDate(LocalDate date) {
-        return attendanceRepository.findByDate(date);
-    }
-    
-    public Map<String, Object> getAttendanceStats(Long studentId) {
-        Map<String, Object> stats = new HashMap<>();
+    public Attendance markManualAttendance(Long userId, Long groupId, LocalDate date, AttendanceStatus status, String notes) {
+        Optional<Attendance> existing = attendanceRepository.findByUserIdAndDate(userId, date);
         
-        Long presentDays = attendanceRepository.countByStudentIdAndStatus(studentId, Attendance.AttendanceStatus.PRESENT);
-        Long absentDays = attendanceRepository.countByStudentIdAndStatus(studentId, Attendance.AttendanceStatus.ABSENT);
-        Long lateDays = attendanceRepository.countByStudentIdAndStatus(studentId, Attendance.AttendanceStatus.LATE);
-        Double avgHours = attendanceRepository.getAverageHoursWorkedByStudent(studentId);
-        
-        stats.put("presentDays", presentDays);
-        stats.put("absentDays", absentDays);
-        stats.put("lateDays", lateDays);
-        stats.put("averageHoursWorked", avgHours);
-        
-        Long totalDays = presentDays + absentDays + lateDays;
-        if (totalDays > 0) {
-            stats.put("attendancePercentage", (presentDays * 100.0) / totalDays);
+        Attendance attendance;
+        if (existing.isPresent()) {
+            attendance = existing.get();
+        } else {
+            attendance = new Attendance(userId, groupId, date);
         }
         
-        return stats;
+        attendance.setStatus(status);
+        attendance.setNotes(notes);
+        attendance.setIsManual(true);
+        
+        if (status == AttendanceStatus.PRESENT && attendance.getTotalHours() == null) {
+            attendance.setTotalHours(8.0); // Default 8 hours for manual present
+        }
+        
+        return attendanceRepository.save(attendance);
     }
     
-    public List<Attendance> getAllAttendance() {
-        return attendanceRepository.findAll();
+    public List<Attendance> getUserAttendance(Long userId, LocalDate startDate, LocalDate endDate) {
+        try {
+            return attendanceRepository.findByUserIdAndDateBetween(userId, startDate, endDate);
+        } catch (Exception e) {
+            return new ArrayList<>();
+        }
+    }
+    
+    public List<Attendance> getGroupAttendance(Long groupId, LocalDate date) {
+        return attendanceRepository.findGroupAttendanceByDate(groupId, date);
+    }
+    
+    public Double getUserTotalHours(Long userId, LocalDate startDate, LocalDate endDate) {
+        Double total = attendanceRepository.getTotalHoursByUserAndDateRange(userId, startDate, endDate);
+        return total != null ? total : 0.0;
+    }
+    
+    public Optional<Attendance> getTodayAttendance(Long userId) {
+        try {
+            return attendanceRepository.findByUserIdAndDate(userId, LocalDate.now());
+        } catch (Exception e) {
+            return Optional.empty();
+        }
     }
 }
