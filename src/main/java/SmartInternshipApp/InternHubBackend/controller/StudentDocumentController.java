@@ -110,23 +110,39 @@ public class StudentDocumentController {
                         String fileName = file.getName();
                         System.out.println("Processing file: " + fileName);
                         
-                        String studentNameInFile = fileName.split("_", 2)[1].replace(CERT_FILE_EXT, "").replace("_", " ");
+                        String studentNameInFile = fileName.split("_", 2)[1].replace(CERT_FILE_EXT, "").replace("_", " ").trim();
                         System.out.println("Student name in file: '" + studentNameInFile + "'");
                         System.out.println("Logged in student: '" + student.getFullName() + "'");
                         
-                        String studentLower = student.getFullName().toLowerCase();
-                        String fileLower = studentNameInFile.toLowerCase();
+                        String studentLower = student.getFullName().toLowerCase().trim();
+                        String fileLower = studentNameInFile.toLowerCase().trim();
                         
-                        // Try exact match first
-                        boolean matches = studentLower.contains(fileLower) || fileLower.contains(studentLower);
+                        // Clean both names - remove extra spaces and special characters
+                        String studentClean = studentLower.replaceAll("\\s+", " ").replaceAll("[^a-z ]", "");
+                        String fileClean = fileLower.replaceAll("\\s+", " ").replaceAll("[^a-z ]", "");
                         
-                        // If no match, try similarity check (80% similar)
+                        // Try multiple matching strategies
+                        boolean matches = false;
+                        
+                        // 1. Exact match
+                        if (studentClean.equals(fileClean)) {
+                            matches = true;
+                            System.out.println("Exact match found");
+                        }
+                        
+                        // 2. Contains match
+                        if (!matches && (studentClean.contains(fileClean) || fileClean.contains(studentClean))) {
+                            matches = true;
+                            System.out.println("Contains match found");
+                        }
+                        
+                        // 3. Similarity check (70% similar)
                         if (!matches) {
-                            String studentClean = studentLower.replaceAll("[^a-z]", "");
-                            String fileClean = fileLower.replaceAll("[^a-z]", "");
-                            int similarity = calculateSimilarity(studentClean, fileClean);
-                            matches = similarity >= 80;
-                            System.out.println("Similarity: " + similarity + "%");
+                            String studentNoSpaces = studentClean.replaceAll(" ", "");
+                            String fileNoSpaces = fileClean.replaceAll(" ", "");
+                            int similarity = calculateSimilarity(studentNoSpaces, fileNoSpaces);
+                            matches = similarity >= 70;
+                            System.out.println("Similarity: " + similarity + "% (threshold: 70%)");
                         }
                         
                         System.out.println("Match: " + matches);
