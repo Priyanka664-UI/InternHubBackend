@@ -147,4 +147,27 @@ public class GroupService {
         }
         throw new RuntimeException("Group not found");
     }
+    
+    public Group updateGroup(Long groupId, Group updatedGroup) {
+        Optional<Group> existingGroup = groupRepository.findById(groupId);
+        if (existingGroup.isPresent()) {
+            Group group = existingGroup.get();
+            group.setGroupName(updatedGroup.getGroupName());
+            group.setCollegeName(updatedGroup.getCollegeName());
+            group.setDepartment(updatedGroup.getDepartment());
+            group.setAcademicYear(updatedGroup.getAcademicYear());
+            group.setSemester(updatedGroup.getSemester());
+            group.setTotalStudents(updatedGroup.getTotalStudents());
+            group.setInternshipType(updatedGroup.getInternshipType());
+            group.setPreferredMode(updatedGroup.getPreferredMode());
+            group.setDurationMonths(updatedGroup.getDurationMonths());
+            group.setStartDate(updatedGroup.getStartDate());
+            group.setEndDate(updatedGroup.getEndDate());
+            group.setFacultyName(updatedGroup.getFacultyName());
+            group.setFacultyEmail(updatedGroup.getFacultyEmail());
+            group.setFacultyPhone(updatedGroup.getFacultyPhone());
+            return groupRepository.save(group);
+        }
+        throw new RuntimeException("Group not found");
+    }
 }

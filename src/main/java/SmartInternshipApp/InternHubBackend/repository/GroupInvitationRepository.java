@@ -19,6 +19,8 @@ public interface GroupInvitationRepository extends JpaRepository<GroupInvitation
     
     List<GroupInvitation> findByGroupIdAndStatus(Long groupId, InvitationStatus status);
     
+    List<GroupInvitation> findByGroupId(Long groupId);
+    
     Optional<GroupInvitation> findByInvitationToken(String token);
     
     @Query("SELECT COUNT(gi) FROM GroupInvitation gi WHERE gi.inviteeEmail = :email AND gi.status = 'PENDING'")

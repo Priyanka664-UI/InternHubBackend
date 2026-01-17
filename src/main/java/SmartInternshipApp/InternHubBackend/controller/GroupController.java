@@ -83,6 +83,19 @@ public class GroupController {
         }
     }
     
+    @PutMapping("/{groupId}")
+    @CrossOrigin(origins = "*")
+    public ResponseEntity<Group> updateGroup(@PathVariable Long groupId, @RequestBody Group group) {
+        try {
+            System.out.println("Updating group with ID: " + groupId);
+            Group updatedGroup = groupService.updateGroup(groupId, group);
+            return ResponseEntity.ok(updatedGroup);
+        } catch (Exception e) {
+            e.printStackTrace();
+            return ResponseEntity.badRequest().build();
+        }
+    }
+    
     @PostMapping("/{groupId}/invite")
     public ResponseEntity<String> inviteStudent(@PathVariable Long groupId, 
                                               @RequestParam String email,

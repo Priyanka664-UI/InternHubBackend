@@ -30,4 +30,7 @@ public interface AttendanceRepository extends JpaRepository<Attendance, Long> {
     
     @Query("SELECT a FROM Attendance a WHERE a.groupId = :groupId AND a.date = :date ORDER BY a.userId")
     List<Attendance> findGroupAttendanceByDate(@Param("groupId") Long groupId, @Param("date") LocalDate date);
+    
+    @Query("SELECT a FROM Attendance a WHERE a.date BETWEEN :startDate AND :endDate")
+    List<Attendance> findByDateRange(@Param("startDate") LocalDate startDate, @Param("endDate") LocalDate endDate);
 }

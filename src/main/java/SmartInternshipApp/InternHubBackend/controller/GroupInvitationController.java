@@ -28,6 +28,19 @@ public class GroupInvitationController {
     @PostMapping("/send")
     public ResponseEntity<?> sendInvitation(@RequestBody InvitationRequest request) {
         try {
+            System.out.println("Received invitation request: " + request.getGroupId() + ", " + request.getInviterId() + ", " + request.getInviteeEmail());
+            
+            // Validate request
+            if (request.getGroupId() == null) {
+                return ResponseEntity.badRequest().body("Group ID is required");
+            }
+            if (request.getInviterId() == null) {
+                return ResponseEntity.badRequest().body("Inviter ID is required");
+            }
+            if (request.getInviteeEmail() == null || request.getInviteeEmail().trim().isEmpty()) {
+                return ResponseEntity.badRequest().body("Invitee email is required");
+            }
+            
             // Check if group exists
             Optional<Group> groupOpt = groupRepository.findById(request.getGroupId());
             if (!groupOpt.isPresent()) {
@@ -38,7 +51,7 @@ public class GroupInvitationController {
             
             // Check if invitation already exists
             if (invitationRepository.existsByGroupIdAndInviteeEmail(request.getGroupId(), request.getInviteeEmail())) {
-                return ResponseEntity.badRequest().body("Invitation already sent to this email");
+                return ResponseEntity.badRequest().body("Already added to team");
             }
             
             // Create invitation
@@ -52,12 +65,14 @@ public class GroupInvitationController {
             );
             
             GroupInvitation saved = invitationRepository.save(invitation);
+            System.out.println("Invitation saved successfully with ID: " + saved.getId());
             
             // TODO: Send email notification
             
             return ResponseEntity.ok(saved);
             
         } catch (Exception e) {
+            e.printStackTrace();
             return ResponseEntity.badRequest().body("Error sending invitation: " + e.getMessage());
         }
     }
@@ -65,10 +80,34 @@ public class GroupInvitationController {
     @GetMapping("/pending/{email}")
     public ResponseEntity<List<GroupInvitation>> getPendingInvitations(@PathVariable String email) {
         try {
+            System.out.println("Fetching invitations for email: " + email);
             List<GroupInvitation> invitations = invitationRepository.findByInviteeEmailAndStatus(email, InvitationStatus.PENDING);
+            System.out.println("Found " + invitations.size() + " invitations");
             return ResponseEntity.ok(invitations);
         } catch (Exception e) {
-            // Return empty list if table doesn't exist or other database error
+            System.err.println("Error fetching invitations: " + e.getMessage());
+            e.printStackTrace();
+            return ResponseEntity.ok(List.of());
+        }
+    }
+    
+    @GetMapping("/all")
+    public ResponseEntity<List<GroupInvitation>> getAllInvitations() {
+        try {
+            List<GroupInvitation> invitations = invitationRepository.findAll();
+            System.out.println("Total invitations in database: " + invitations.size());
+            return ResponseEntity.ok(invitations);
+        } catch (Exception e) {
+            return ResponseEntity.ok(List.of());
+        }
+    }
+    
+    @GetMapping("/group/{groupId}")
+    public ResponseEntity<List<GroupInvitation>> getGroupInvitations(@PathVariable Long groupId) {
+        try {
+            List<GroupInvitation> invitations = invitationRepository.findByGroupId(groupId);
+            return ResponseEntity.ok(invitations);
+        } catch (Exception e) {
             return ResponseEntity.ok(List.of());
         }
     }

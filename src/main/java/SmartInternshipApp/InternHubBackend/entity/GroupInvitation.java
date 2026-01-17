@@ -24,7 +24,7 @@ public class GroupInvitation {
     @Column(name = "invitee_email", nullable = false)
     private String inviteeEmail;
     
-    @Column(name = "invitee_id")
+    @Column(name = "invitee_user_id")
     private Long inviteeId;
     
     @Column(name = "message", columnDefinition = "TEXT")

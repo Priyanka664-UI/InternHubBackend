@@ -1,11 +1,13 @@
 package SmartInternshipApp.InternHubBackend.entity;
 
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import jakarta.persistence.*;
 import java.time.LocalDate;
 import java.util.List;
 
 @Entity
 @Table(name = "groups")
+@JsonIgnoreProperties({"hibernateLazyInitializer", "handler"})
 public class Group {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -53,8 +55,9 @@ public class Group {
     @Column(name = "faculty_phone")
     private String facultyPhone;
     
-    @ManyToOne
+    @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "leader_id")
+    @JsonIgnoreProperties({"hibernateLazyInitializer", "handler"})
     private Student leader;
     
     @Enumerated(EnumType.STRING)

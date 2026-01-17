@@ -12,4 +12,5 @@ public interface GroupRepository extends JpaRepository<Group, Long> {
     List<Group> findByLeader(Student leader);
     List<Group> findByStatus(Group.GroupStatus status);
     List<Group> findByCollegeName(String collegeName);
+    List<Group> findByFacultyEmail(String facultyEmail);
 }
