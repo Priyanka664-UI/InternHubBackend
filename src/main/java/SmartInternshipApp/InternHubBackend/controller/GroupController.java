@@ -129,4 +129,28 @@ public class GroupController {
             return ResponseEntity.status(500).body(List.of());
         }
     }
+    
+    @GetMapping("/user/{userId}")
+    public ResponseEntity<Group> getUserGroup(@PathVariable Long userId) {
+        try {
+            Group group = groupService.getUserGroup(userId);
+            if (group != null) {
+                return ResponseEntity.ok(group);
+            } else {
+                return ResponseEntity.notFound().build();
+            }
+        } catch (Exception e) {
+            return ResponseEntity.notFound().build();
+        }
+    }
+    
+    @PostMapping("/{groupId}/join-company/{companyId}")
+    public ResponseEntity<Group> joinCompany(@PathVariable Long groupId, @PathVariable Long companyId) {
+        try {
+            Group updatedGroup = groupService.joinCompany(groupId, companyId);
+            return ResponseEntity.ok(updatedGroup);
+        } catch (Exception e) {
+            return ResponseEntity.badRequest().build();
+        }
+    }
 }

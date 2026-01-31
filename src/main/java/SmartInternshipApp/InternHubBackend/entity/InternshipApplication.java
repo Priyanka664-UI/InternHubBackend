@@ -18,6 +18,14 @@ public class InternshipApplication {
     @JoinColumn(name = "internship_id", nullable = false)
     private Internship internship;
     
+    @ManyToOne
+    @JoinColumn(name = "group_id")
+    private Group group;
+    
+    @Enumerated(EnumType.STRING)
+    @Column(name = "application_type")
+    private ApplicationType applicationType = ApplicationType.INDIVIDUAL;
+    
     @Enumerated(EnumType.STRING)
     @Column(nullable = false)
     private ApplicationStatus status = ApplicationStatus.PENDING;
@@ -45,6 +53,10 @@ public class InternshipApplication {
     
     public enum ApplicationStatus {
         PENDING, ACCEPTED, REJECTED, COMPLETED
+    }
+    
+    public enum ApplicationType {
+        INDIVIDUAL, GROUP
     }
     
     // Constructors
@@ -83,4 +95,10 @@ public class InternshipApplication {
     
     public String getStudentIdUrl() { return studentIdUrl; }
     public void setStudentIdUrl(String studentIdUrl) { this.studentIdUrl = studentIdUrl; }
+    
+    public Group getGroup() { return group; }
+    public void setGroup(Group group) { this.group = group; }
+    
+    public ApplicationType getApplicationType() { return applicationType; }
+    public void setApplicationType(ApplicationType applicationType) { this.applicationType = applicationType; }
 }

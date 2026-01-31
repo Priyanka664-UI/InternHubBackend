@@ -4,10 +4,12 @@ import SmartInternshipApp.InternHubBackend.entity.Group;
 import SmartInternshipApp.InternHubBackend.entity.GroupMember;
 import SmartInternshipApp.InternHubBackend.entity.GroupInvitation;
 import SmartInternshipApp.InternHubBackend.entity.Student;
+import SmartInternshipApp.InternHubBackend.entity.Company;
 import SmartInternshipApp.InternHubBackend.repository.GroupRepository;
 import SmartInternshipApp.InternHubBackend.repository.GroupMemberRepository;
 import SmartInternshipApp.InternHubBackend.repository.GroupInvitationRepository;
 import SmartInternshipApp.InternHubBackend.repository.StudentRepository;
+import SmartInternshipApp.InternHubBackend.repository.CompanyRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -28,6 +30,9 @@ public class GroupService {
     
     @Autowired
     private StudentRepository studentRepository;
+    
+    @Autowired
+    private CompanyRepository companyRepository;
     
     public Group createGroup(Group group, Long leaderId) {
         Optional<Student> leader = studentRepository.findById(leaderId);
@@ -112,6 +117,15 @@ public class GroupService {
                 System.out.println("Leader found: " + leader.get().getFullName());
                 List<Group> groups = groupRepository.findByLeader(leader.get());
                 System.out.println("Found " + groups.size() + " groups in database");
+                
+                // Explicitly load company data for each group
+                for (Group group : groups) {
+                    if (group.getCompany() != null) {
+                        // Force loading of company data
+                        group.getCompany().getName();
+                    }
+                }
+                
                 return groups;
             } else {
                 System.out.println("Leader not found for ID: " + leaderId);
@@ -170,4 +184,44 @@ public class GroupService {
         }
         throw new RuntimeException("Group not found");
     }
+    
+    public Group getUserGroup(Long userId) {
+        Optional<Student> student = studentRepository.findById(userId);
+        if (student.isPresent()) {
+            // Check if user is a leader of any group
+            List<Group> leaderGroups = groupRepository.findByLeader(student.get());
+            if (!leaderGroups.isEmpty()) {
+                return leaderGroups.get(0);
+            }
+            
+            // Check if user is a member of any group
+            List<GroupMember> memberships = groupMemberRepository.findByStudent(student.get());
+            if (!memberships.isEmpty()) {
+                return memberships.get(0).getGroup();
+            }
+        }
+        return null;
+    }
+    
+    public Group joinCompany(Long groupId, Long companyId) {
+        Optional<Group> groupOpt = groupRepository.findById(groupId);
+        Optional<Company> companyOpt = companyRepository.findById(companyId);
+        
+        if (groupOpt.isPresent() && companyOpt.isPresent()) {
+            Group group = groupOpt.get();
+            group.setCompany(companyOpt.get());
+            group.setStatus(Group.GroupStatus.APPLIED);
+            return groupRepository.save(group);
+        }
+        throw new RuntimeException("Group or Company not found");
+    }
+    
+    public Long getGroupCompanyId(Long groupId) {
+        Optional<Group> group = groupRepository.findById(groupId);
+        if (group.isPresent() && group.get().getCompany() != null) {
+            return group.get().getCompany().getId();
+        }
+        return null;
+    }
+
 }

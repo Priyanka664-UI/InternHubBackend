@@ -19,6 +19,19 @@ public class ApplicationController {
             @RequestParam("college") String college,
             @RequestParam("degree") String degree,
             @RequestParam("yearOfStudy") String yearOfStudy,
+            @RequestParam(value = "groupId", required = false) Long groupId,
+            @RequestParam(value = "applicationType", required = false) String applicationType,
+            @RequestParam(value = "teamSize", required = false) Integer teamSize,
+            @RequestParam(value = "teamLeader", required = false) String teamLeader,
+            @RequestParam(value = "leaderContact", required = false) String leaderContact,
+            @RequestParam(value = "leaderEmail", required = false) String leaderEmail,
+            @RequestParam(value = "teamMembers", required = false) String teamMembers,
+            @RequestParam(value = "memberEmails", required = false) String memberEmails,
+            @RequestParam(value = "academicYear", required = false) String academicYear,
+            @RequestParam(value = "semester", required = false) String semester,
+            @RequestParam(value = "skills", required = false) String skills,
+            @RequestParam(value = "experience", required = false) String experience,
+            @RequestParam(value = "motivation", required = false) String motivation,
             @RequestParam(value = "studentId", required = false) MultipartFile studentIdFile,
             @RequestParam(value = "resume", required = false) MultipartFile resumeFile,
             @RequestHeader(value = "Authorization", required = false) String token) {
@@ -27,12 +40,19 @@ public class ApplicationController {
             System.out.println("=== Application Submission Started ===");
             System.out.println("Received application: internshipId=" + internshipId);
             System.out.println("College: " + college + ", Degree: " + degree + ", Year: " + yearOfStudy);
+            System.out.println("GroupId: " + groupId + ", ApplicationType: " + applicationType);
+            if ("GROUP".equals(applicationType)) {
+                System.out.println("Team Size: " + teamSize + ", Team Leader: " + teamLeader);
+                System.out.println("Leader Contact: " + leaderContact + ", Leader Email: " + leaderEmail);
+            }
             System.out.println("Token: " + (token != null ? "Present" : "Missing"));
             System.out.println("StudentId file: " + (studentIdFile != null ? studentIdFile.getOriginalFilename() : "null"));
             System.out.println("Resume file: " + (resumeFile != null ? resumeFile.getOriginalFilename() : "null"));
             
             applicationService.submitApplication(internshipId, college, degree, yearOfStudy, 
-                    studentIdFile, resumeFile, token);
+                    groupId, applicationType, teamSize, teamLeader, leaderContact, leaderEmail,
+                    teamMembers, memberEmails, academicYear, semester, skills, experience, 
+                    motivation, studentIdFile, resumeFile, token);
             
             System.out.println("=== Application Submitted Successfully ===");
             return ResponseEntity.ok().body("{\"message\": \"Application submitted successfully\"}");

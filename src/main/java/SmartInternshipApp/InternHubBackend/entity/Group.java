@@ -63,6 +63,11 @@ public class Group {
     @Enumerated(EnumType.STRING)
     private GroupStatus status = GroupStatus.PENDING;
     
+    @ManyToOne(fetch = FetchType.EAGER)
+    @JoinColumn(name = "company_id")
+    @JsonIgnoreProperties({"hibernateLazyInitializer", "handler"})
+    private Company company;
+    
     // Constructors
     public Group() {}
     
@@ -117,6 +122,9 @@ public class Group {
     
     public GroupStatus getStatus() { return status; }
     public void setStatus(GroupStatus status) { this.status = status; }
+    
+    public Company getCompany() { return company; }
+    public void setCompany(Company company) { this.company = company; }
     
     public enum InternshipType {
         TECHNICAL, NON_TECHNICAL

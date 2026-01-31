@@ -38,6 +38,15 @@ public class Company {
     @Column(name = "phone_number")
     private String contactPhone;
     
+    @Column(name = "latitude")
+    private Double latitude;
+    
+    @Column(name = "longitude")
+    private Double longitude;
+    
+    @Column(name = "address")
+    private String address;
+    
     @Transient
     private String stateName;
     
@@ -86,4 +95,13 @@ public class Company {
     
     public String getCityName() { return cityName; }
     public void setCityName(String cityName) { this.cityName = cityName; }
+    
+    public Double getLatitude() { return latitude; }
+    public void setLatitude(Double latitude) { this.latitude = latitude; }
+    
+    public Double getLongitude() { return longitude; }
+    public void setLongitude(Double longitude) { this.longitude = longitude; }
+    
+    public String getAddress() { return address; }
+    public void setAddress(String address) { this.address = address; }
 }

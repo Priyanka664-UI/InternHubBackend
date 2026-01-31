@@ -3,8 +3,11 @@ package SmartInternshipApp.InternHubBackend.controller;
 import SmartInternshipApp.InternHubBackend.entity.Group;
 import SmartInternshipApp.InternHubBackend.entity.GroupInvitation;
 import SmartInternshipApp.InternHubBackend.entity.GroupInvitation.InvitationStatus;
+import SmartInternshipApp.InternHubBackend.entity.Student;
 import SmartInternshipApp.InternHubBackend.repository.GroupRepository;
 import SmartInternshipApp.InternHubBackend.repository.GroupInvitationRepository;
+import SmartInternshipApp.InternHubBackend.repository.StudentRepository;
+import SmartInternshipApp.InternHubBackend.service.NotificationService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -24,6 +27,12 @@ public class GroupInvitationController {
     
     @Autowired
     private GroupRepository groupRepository;
+    
+    @Autowired
+    private StudentRepository studentRepository;
+    
+    @Autowired
+    private NotificationService notificationService;
     
     @PostMapping("/send")
     public ResponseEntity<?> sendInvitation(@RequestBody InvitationRequest request) {
@@ -66,6 +75,14 @@ public class GroupInvitationController {
             
             GroupInvitation saved = invitationRepository.save(invitation);
             System.out.println("Invitation saved successfully with ID: " + saved.getId());
+            
+            // Create notification for the invitee
+            Optional<Student> inviteeStudent = studentRepository.findByEmail(request.getInviteeEmail());
+            if (inviteeStudent.isPresent()) {
+                String title = "Group Invitation";
+                String message = "You have been invited to join the group: " + group.getGroupName();
+                notificationService.createNotification(inviteeStudent.get().getId(), title, message, "GROUP_INVITATION");
+            }
             
             // TODO: Send email notification
             
@@ -142,6 +159,18 @@ public class GroupInvitationController {
             invitation.setInviteeId(response.getUserId());
             
             invitationRepository.save(invitation);
+            
+            // Send notification to team creator when invitation is accepted
+            if (response.isAccepted()) {
+                Optional<Student> inviterStudent = studentRepository.findById(invitation.getInviterId());
+                Optional<Student> inviteeStudent = studentRepository.findById(response.getUserId());
+                
+                if (inviterStudent.isPresent() && inviteeStudent.isPresent()) {
+                    String title = "Invitation Accepted";
+                    String message = inviteeStudent.get().getFullName() + " has accepted your invitation to join " + invitation.getGroup().getGroupName();
+                    notificationService.createNotification(inviterStudent.get().getId(), title, message, "INVITATION_ACCEPTED");
+                }
+            }
             
             return ResponseEntity.ok("Invitation " + (response.isAccepted() ? "accepted" : "rejected"));
             

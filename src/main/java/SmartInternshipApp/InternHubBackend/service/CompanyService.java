@@ -67,6 +67,9 @@ public class CompanyService {
             company.setContactPerson(companyDetails.getContactPerson());
             company.setContactPhone(companyDetails.getContactPhone());
             company.setCategory(companyDetails.getCategory());
+            company.setLatitude(companyDetails.getLatitude());
+            company.setLongitude(companyDetails.getLongitude());
+            company.setAddress(companyDetails.getAddress());
             return companyRepository.save(company);
         }
         return null;
