@@ -38,7 +38,17 @@ public class GroupService {
         Optional<Student> leader = studentRepository.findById(leaderId);
         if (leader.isPresent()) {
             group.setLeader(leader.get());
-            return groupRepository.save(group);
+            Group savedGroup = groupRepository.save(group);
+            
+            // Automatically add leader as group member
+            GroupMember leaderMember = new GroupMember();
+            leaderMember.setGroup(savedGroup);
+            leaderMember.setStudent(leader.get());
+            leaderMember.setStudentName(leader.get().getFullName());
+            leaderMember.setStatus(GroupMember.MemberStatus.APPROVED);
+            groupMemberRepository.save(leaderMember);
+            
+            return savedGroup;
         }
         throw new RuntimeException("Leader not found");
     }

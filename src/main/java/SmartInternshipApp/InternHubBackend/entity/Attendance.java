@@ -7,91 +7,89 @@ import java.time.LocalDateTime;
 @Entity
 @Table(name = "attendance")
 public class Attendance {
-    
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
     
-    @Column(name = "user_id", nullable = false)
-    private Long userId;
+    @ManyToOne(fetch = FetchType.EAGER)
+    @JoinColumn(name = "student_id", nullable = false)
+    private Student student;
     
-    @Column(name = "group_id", nullable = false)
-    private Long groupId;
+    @ManyToOne(fetch = FetchType.EAGER)
+    @JoinColumn(name = "group_id", nullable = false)
+    private Group group;
     
-    @Column(name = "date", nullable = false)
-    private LocalDate date;
+    @Column(name = "attendance_date", nullable = false)
+    private LocalDate attendanceDate;
     
-    @Column(name = "check_in_time")
+    @Column(name = "check_in_time", nullable = false)
     private LocalDateTime checkInTime;
     
-    @Column(name = "check_out_time")
-    private LocalDateTime checkOutTime;
+    @Column(name = "student_latitude", nullable = false)
+    private Double studentLatitude;
     
-    @Column(name = "total_hours")
-    private Double totalHours;
+    @Column(name = "student_longitude", nullable = false)
+    private Double studentLongitude;
+    
+    @Column(name = "company_latitude")
+    private Double companyLatitude;
+    
+    @Column(name = "company_longitude")
+    private Double companyLongitude;
+    
+    @Column(name = "distance_meters")
+    private Double distanceMeters;
     
     @Enumerated(EnumType.STRING)
     @Column(name = "status", nullable = false)
-    private AttendanceStatus status = AttendanceStatus.ABSENT;
-    
-    @Column(name = "notes")
-    private String notes;
-    
-    @Column(name = "is_manual", nullable = false)
-    private Boolean isManual = false;
+    private AttendanceStatus status;
     
     @Column(name = "created_at", nullable = false)
     private LocalDateTime createdAt;
     
-    @PrePersist
-    protected void onCreate() {
-        createdAt = LocalDateTime.now();
-    }
-    
-    public enum AttendanceStatus {
-        PRESENT, ABSENT, LATE, HALF_DAY
-    }
-    
     // Constructors
-    public Attendance() {}
-    
-    public Attendance(Long userId, Long groupId, LocalDate date) {
-        this.userId = userId;
-        this.groupId = groupId;
-        this.date = date;
+    public Attendance() {
+        this.createdAt = LocalDateTime.now();
     }
     
     // Getters and Setters
     public Long getId() { return id; }
     public void setId(Long id) { this.id = id; }
     
-    public Long getUserId() { return userId; }
-    public void setUserId(Long userId) { this.userId = userId; }
+    public Student getStudent() { return student; }
+    public void setStudent(Student student) { this.student = student; }
     
-    public Long getGroupId() { return groupId; }
-    public void setGroupId(Long groupId) { this.groupId = groupId; }
+    public Group getGroup() { return group; }
+    public void setGroup(Group group) { this.group = group; }
     
-    public LocalDate getDate() { return date; }
-    public void setDate(LocalDate date) { this.date = date; }
+    public LocalDate getAttendanceDate() { return attendanceDate; }
+    public void setAttendanceDate(LocalDate attendanceDate) { this.attendanceDate = attendanceDate; }
     
     public LocalDateTime getCheckInTime() { return checkInTime; }
     public void setCheckInTime(LocalDateTime checkInTime) { this.checkInTime = checkInTime; }
     
-    public LocalDateTime getCheckOutTime() { return checkOutTime; }
-    public void setCheckOutTime(LocalDateTime checkOutTime) { this.checkOutTime = checkOutTime; }
+    public Double getStudentLatitude() { return studentLatitude; }
+    public void setStudentLatitude(Double studentLatitude) { this.studentLatitude = studentLatitude; }
     
-    public Double getTotalHours() { return totalHours; }
-    public void setTotalHours(Double totalHours) { this.totalHours = totalHours; }
+    public Double getStudentLongitude() { return studentLongitude; }
+    public void setStudentLongitude(Double studentLongitude) { this.studentLongitude = studentLongitude; }
+    
+    public Double getCompanyLatitude() { return companyLatitude; }
+    public void setCompanyLatitude(Double companyLatitude) { this.companyLatitude = companyLatitude; }
+    
+    public Double getCompanyLongitude() { return companyLongitude; }
+    public void setCompanyLongitude(Double companyLongitude) { this.companyLongitude = companyLongitude; }
+    
+    public Double getDistanceMeters() { return distanceMeters; }
+    public void setDistanceMeters(Double distanceMeters) { this.distanceMeters = distanceMeters; }
     
     public AttendanceStatus getStatus() { return status; }
     public void setStatus(AttendanceStatus status) { this.status = status; }
     
-    public String getNotes() { return notes; }
-    public void setNotes(String notes) { this.notes = notes; }
-    
-    public Boolean getIsManual() { return isManual; }
-    public void setIsManual(Boolean isManual) { this.isManual = isManual; }
-    
     public LocalDateTime getCreatedAt() { return createdAt; }
     public void setCreatedAt(LocalDateTime createdAt) { this.createdAt = createdAt; }
+    
+    public enum AttendanceStatus {
+        PRESENT, ABSENT, LOCATION_MISMATCH
+    }
 }

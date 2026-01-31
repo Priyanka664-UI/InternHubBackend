@@ -1,7 +1,8 @@
 package SmartInternshipApp.InternHubBackend.repository;
 
 import SmartInternshipApp.InternHubBackend.entity.Attendance;
-import SmartInternshipApp.InternHubBackend.entity.Attendance.AttendanceStatus;
+import SmartInternshipApp.InternHubBackend.entity.Student;
+import SmartInternshipApp.InternHubBackend.entity.Group;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
@@ -14,23 +15,15 @@ import java.util.Optional;
 @Repository
 public interface AttendanceRepository extends JpaRepository<Attendance, Long> {
     
-    Optional<Attendance> findByUserIdAndDate(Long userId, LocalDate date);
+    Optional<Attendance> findByStudentAndAttendanceDate(Student student, LocalDate date);
     
-    List<Attendance> findByUserIdAndDateBetween(Long userId, LocalDate startDate, LocalDate endDate);
+    List<Attendance> findByGroupAndAttendanceDate(Group group, LocalDate date);
     
-    List<Attendance> findByGroupIdAndDate(Long groupId, LocalDate date);
+    List<Attendance> findByGroupOrderByAttendanceDateDescCheckInTimeDesc(Group group);
     
-    List<Attendance> findByGroupIdAndDateBetween(Long groupId, LocalDate startDate, LocalDate endDate);
+    @Query("SELECT a FROM Attendance a WHERE a.group.id = :groupId AND a.attendanceDate BETWEEN :startDate AND :endDate ORDER BY a.attendanceDate DESC, a.checkInTime DESC")
+    List<Attendance> findByGroupAndDateRange(@Param("groupId") Long groupId, @Param("startDate") LocalDate startDate, @Param("endDate") LocalDate endDate);
     
-    @Query("SELECT SUM(a.totalHours) FROM Attendance a WHERE a.userId = :userId AND a.date BETWEEN :startDate AND :endDate")
-    Double getTotalHoursByUserAndDateRange(@Param("userId") Long userId, @Param("startDate") LocalDate startDate, @Param("endDate") LocalDate endDate);
-    
-    @Query("SELECT COUNT(a) FROM Attendance a WHERE a.userId = :userId AND a.status = :status AND a.date BETWEEN :startDate AND :endDate")
-    Long countByUserIdAndStatusAndDateRange(@Param("userId") Long userId, @Param("status") AttendanceStatus status, @Param("startDate") LocalDate startDate, @Param("endDate") LocalDate endDate);
-    
-    @Query("SELECT a FROM Attendance a WHERE a.groupId = :groupId AND a.date = :date ORDER BY a.userId")
-    List<Attendance> findGroupAttendanceByDate(@Param("groupId") Long groupId, @Param("date") LocalDate date);
-    
-    @Query("SELECT a FROM Attendance a WHERE a.date BETWEEN :startDate AND :endDate")
-    List<Attendance> findByDateRange(@Param("startDate") LocalDate startDate, @Param("endDate") LocalDate endDate);
+    @Query("SELECT a FROM Attendance a WHERE a.student.id = :studentId ORDER BY a.attendanceDate DESC, a.checkInTime DESC")
+    List<Attendance> findByStudentOrderByDateDesc(@Param("studentId") Long studentId);
 }

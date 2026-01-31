@@ -1,17 +1,17 @@
 package SmartInternshipApp.InternHubBackend.service;
 
-import SmartInternshipApp.InternHubBackend.entity.Attendance;
-import SmartInternshipApp.InternHubBackend.entity.Attendance.AttendanceStatus;
-import SmartInternshipApp.InternHubBackend.repository.AttendanceRepository;
+import SmartInternshipApp.InternHubBackend.dto.AttendanceRequest;
+import SmartInternshipApp.InternHubBackend.dto.AttendanceResponse;
+import SmartInternshipApp.InternHubBackend.entity.*;
+import SmartInternshipApp.InternHubBackend.repository.*;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
-import java.time.Duration;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
+import java.util.stream.Collectors;
 
 @Service
 public class AttendanceService {
@@ -19,89 +19,138 @@ public class AttendanceService {
     @Autowired
     private AttendanceRepository attendanceRepository;
     
-    public Attendance checkIn(Long userId, Long groupId) {
-        LocalDate today = LocalDate.now();
-        Optional<Attendance> existing = attendanceRepository.findByUserIdAndDate(userId, today);
-        
-        if (existing.isPresent()) {
-            throw new RuntimeException("Already checked in today");
-        }
-        
-        Attendance attendance = new Attendance(userId, groupId, today);
-        attendance.setCheckInTime(LocalDateTime.now());
-        attendance.setStatus(AttendanceStatus.PRESENT);
-        
-        return attendanceRepository.save(attendance);
-    }
+    @Autowired
+    private StudentRepository studentRepository;
     
-    public Attendance checkOut(Long userId) {
-        LocalDate today = LocalDate.now();
-        Optional<Attendance> existing = attendanceRepository.findByUserIdAndDate(userId, today);
-        
-        if (!existing.isPresent()) {
-            throw new RuntimeException("No check-in found for today");
-        }
-        
-        Attendance attendance = existing.get();
-        if (attendance.getCheckOutTime() != null) {
-            throw new RuntimeException("Already checked out today");
-        }
-        
-        attendance.setCheckOutTime(LocalDateTime.now());
-        
-        // Calculate total hours
-        if (attendance.getCheckInTime() != null) {
-            Duration duration = Duration.between(attendance.getCheckInTime(), attendance.getCheckOutTime());
-            double hours = duration.toMinutes() / 60.0;
-            attendance.setTotalHours(Math.round(hours * 100.0) / 100.0);
-        }
-        
-        return attendanceRepository.save(attendance);
-    }
+    @Autowired
+    private GroupRepository groupRepository;
     
-    public Attendance markManualAttendance(Long userId, Long groupId, LocalDate date, AttendanceStatus status, String notes) {
-        Optional<Attendance> existing = attendanceRepository.findByUserIdAndDate(userId, date);
-        
-        Attendance attendance;
-        if (existing.isPresent()) {
-            attendance = existing.get();
-        } else {
-            attendance = new Attendance(userId, groupId, date);
-        }
-        
-        attendance.setStatus(status);
-        attendance.setNotes(notes);
-        attendance.setIsManual(true);
-        
-        if (status == AttendanceStatus.PRESENT && attendance.getTotalHours() == null) {
-            attendance.setTotalHours(8.0); // Default 8 hours for manual present
-        }
-        
-        return attendanceRepository.save(attendance);
-    }
+    @Autowired
+    private GroupMemberRepository groupMemberRepository;
     
-    public List<Attendance> getUserAttendance(Long userId, LocalDate startDate, LocalDate endDate) {
+    private static final double ALLOWED_RADIUS_METERS = 100.0;
+    
+    public AttendanceResponse markAttendance(AttendanceRequest request) {
         try {
-            return attendanceRepository.findByUserIdAndDateBetween(userId, startDate, endDate);
+            // Validate student
+            Optional<Student> studentOpt = studentRepository.findById(request.getStudentId());
+            if (!studentOpt.isPresent()) {
+                return new AttendanceResponse("Student not found");
+            }
+            Student student = studentOpt.get();
+            
+            // Validate group
+            Optional<Group> groupOpt = groupRepository.findById(request.getGroupId());
+            if (!groupOpt.isPresent()) {
+                return new AttendanceResponse("Group not found");
+            }
+            Group group = groupOpt.get();
+            
+            // Verify student is member of the group
+            if (!groupMemberRepository.existsByGroupAndStudent(group, student)) {
+                // If student is the group leader, automatically add them as a member
+                if (group.getLeader() != null && group.getLeader().getId().equals(student.getId())) {
+                    GroupMember leaderMember = new GroupMember();
+                    leaderMember.setGroup(group);
+                    leaderMember.setStudent(student);
+                    leaderMember.setStudentName(student.getFullName());
+                    leaderMember.setStatus(GroupMember.MemberStatus.APPROVED);
+                    groupMemberRepository.save(leaderMember);
+                } else {
+                    return new AttendanceResponse("You are not enrolled in this internship group");
+                }
+            }
+            
+            // Check if attendance already marked today
+            LocalDate today = LocalDate.now();
+            Optional<Attendance> existingAttendance = attendanceRepository.findByStudentAndAttendanceDate(student, today);
+            if (existingAttendance.isPresent()) {
+                return new AttendanceResponse("Attendance already marked for today");
+            }
+            
+            // Get company location
+            Company company = group.getCompany();
+            if (company == null || company.getLatitude() == null || company.getLongitude() == null) {
+                return new AttendanceResponse("Company location not configured");
+            }
+            
+            // Calculate distance
+            double distance = calculateDistance(
+                request.getLatitude(), request.getLongitude(),
+                company.getLatitude(), company.getLongitude()
+            );
+            
+            // Create attendance record
+            Attendance attendance = new Attendance();
+            attendance.setStudent(student);
+            attendance.setGroup(group);
+            attendance.setAttendanceDate(today);
+            attendance.setCheckInTime(LocalDateTime.now());
+            attendance.setStudentLatitude(request.getLatitude());
+            attendance.setStudentLongitude(request.getLongitude());
+            attendance.setCompanyLatitude(company.getLatitude());
+            attendance.setCompanyLongitude(company.getLongitude());
+            attendance.setDistanceMeters(distance);
+            
+            // Determine status based on distance
+            if (distance <= ALLOWED_RADIUS_METERS) {
+                attendance.setStatus(Attendance.AttendanceStatus.PRESENT);
+            } else {
+                attendance.setStatus(Attendance.AttendanceStatus.LOCATION_MISMATCH);
+                attendanceRepository.save(attendance);
+                return new AttendanceResponse("You are not at the internship location. Distance: " + Math.round(distance) + " meters");
+            }
+            
+            attendanceRepository.save(attendance);
+            
+            AttendanceResponse response = new AttendanceResponse(attendance);
+            response.setMessage("Attendance marked successfully");
+            return response;
+            
         } catch (Exception e) {
-            return new ArrayList<>();
+            return new AttendanceResponse("Error marking attendance: " + e.getMessage());
         }
     }
     
-    public List<Attendance> getGroupAttendance(Long groupId, LocalDate date) {
-        return attendanceRepository.findGroupAttendanceByDate(groupId, date);
-    }
-    
-    public Double getUserTotalHours(Long userId, LocalDate startDate, LocalDate endDate) {
-        Double total = attendanceRepository.getTotalHoursByUserAndDateRange(userId, startDate, endDate);
-        return total != null ? total : 0.0;
-    }
-    
-    public Optional<Attendance> getTodayAttendance(Long userId) {
-        try {
-            return attendanceRepository.findByUserIdAndDate(userId, LocalDate.now());
-        } catch (Exception e) {
-            return Optional.empty();
+    public List<AttendanceResponse> getAttendanceByGroup(Long groupId) {
+        Optional<Group> groupOpt = groupRepository.findById(groupId);
+        if (!groupOpt.isPresent()) {
+            return List.of();
         }
+        
+        List<Attendance> attendances = attendanceRepository.findByGroupOrderByAttendanceDateDescCheckInTimeDesc(groupOpt.get());
+        return attendances.stream()
+                .map(AttendanceResponse::new)
+                .collect(Collectors.toList());
+    }
+    
+    public List<AttendanceResponse> getAttendanceByGroupAndDate(Long groupId, LocalDate startDate, LocalDate endDate) {
+        List<Attendance> attendances = attendanceRepository.findByGroupAndDateRange(groupId, startDate, endDate);
+        return attendances.stream()
+                .map(AttendanceResponse::new)
+                .collect(Collectors.toList());
+    }
+    
+    public List<AttendanceResponse> getStudentAttendance(Long studentId) {
+        List<Attendance> attendances = attendanceRepository.findByStudentOrderByDateDesc(studentId);
+        return attendances.stream()
+                .map(AttendanceResponse::new)
+                .collect(Collectors.toList());
+    }
+    
+    // Haversine formula to calculate distance between two points
+    private double calculateDistance(double lat1, double lon1, double lat2, double lon2) {
+        final int R = 6371000; // Earth's radius in meters
+        
+        double latDistance = Math.toRadians(lat2 - lat1);
+        double lonDistance = Math.toRadians(lon2 - lon1);
+        
+        double a = Math.sin(latDistance / 2) * Math.sin(latDistance / 2)
+                + Math.cos(Math.toRadians(lat1)) * Math.cos(Math.toRadians(lat2))
+                * Math.sin(lonDistance / 2) * Math.sin(lonDistance / 2);
+        
+        double c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+        
+        return R * c;
     }
 }

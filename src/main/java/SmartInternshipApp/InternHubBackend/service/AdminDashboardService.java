@@ -14,7 +14,6 @@ public class AdminDashboardService {
     @Autowired private InternshipRepository internshipRepository;
     @Autowired private InternshipApplicationRepository applicationRepository;
     @Autowired private CertificateRepository certificateRepository;
-    @Autowired private AttendanceRepository attendanceRepository;
     
     public Map<String, Object> getDashboardStats() {
         Map<String, Object> stats = new HashMap<>();
@@ -32,10 +31,6 @@ public class AdminDashboardService {
         
         // Performance metrics
         stats.put("averagePerformanceRating", certificateRepository.getAveragePerformanceRating());
-        
-        // Recent activity (last 7 days)
-        LocalDate weekAgo = LocalDate.now().minusDays(7);
-        stats.put("recentAttendance", attendanceRepository.findByDateRange(weekAgo, LocalDate.now()).size());
         
         return stats;
     }
