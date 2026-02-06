@@ -70,6 +70,10 @@ public class CompanyService {
             company.setLatitude(companyDetails.getLatitude());
             company.setLongitude(companyDetails.getLongitude());
             company.setAddress(companyDetails.getAddress());
+            company.setUserType(companyDetails.getUserType());
+            if (companyDetails.getPassword() != null && !companyDetails.getPassword().isEmpty()) {
+                company.setPassword(companyDetails.getPassword());
+            }
             return companyRepository.save(company);
         }
         return null;

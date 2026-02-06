@@ -47,6 +47,11 @@ public class Company {
     @Column(name = "address")
     private String address;
     
+    @Column(name = "user_type")
+    private Integer userType;
+    
+    private String password;
+    
     @Transient
     private String stateName;
     
@@ -104,4 +109,10 @@ public class Company {
     
     public String getAddress() { return address; }
     public void setAddress(String address) { this.address = address; }
+    
+    public Integer getUserType() { return userType; }
+    public void setUserType(Integer userType) { this.userType = userType; }
+    
+    public String getPassword() { return password; }
+    public void setPassword(String password) { this.password = password; }
 }

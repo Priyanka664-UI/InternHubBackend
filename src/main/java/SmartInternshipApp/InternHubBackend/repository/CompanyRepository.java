@@ -7,6 +7,7 @@ import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 import java.util.List;
+import java.util.Optional;
 
 @Repository
 public interface CompanyRepository extends JpaRepository<Company, Long> {
@@ -24,4 +25,6 @@ public interface CompanyRepository extends JpaRepository<Company, Long> {
            "LOWER(c.name) LIKE LOWER(CONCAT('%', :keyword, '%')) OR " +
            "LOWER(c.industry) LIKE LOWER(CONCAT('%', :keyword, '%')))")
     List<Company> findByCategoryAndKeyword(@Param("category") CompanyCategory category, @Param("keyword") String keyword);
+    
+    Optional<Company> findByEmail(String email);
 }

@@ -51,4 +51,31 @@ public class AuthController {
             return ResponseEntity.internalServerError().body("Login failed: " + e.getMessage());
         }
     }
+    
+    @PostMapping("/company/setup-password")
+    public ResponseEntity<?> setupCompanyPassword(@RequestBody LoginRequest request) {
+        try {
+            return authService.setupCompanyPassword(request);
+        } catch (Exception e) {
+            return ResponseEntity.internalServerError().body("Password setup failed: " + e.getMessage());
+        }
+    }
+    
+    @PostMapping("/check-password")
+    public ResponseEntity<?> checkPassword(@RequestBody LoginRequest request) {
+        try {
+            return authService.checkPassword(request);
+        } catch (Exception e) {
+            return ResponseEntity.internalServerError().body("Check failed: " + e.getMessage());
+        }
+    }
+    
+    @GetMapping("/debug/company/{email}")
+    public ResponseEntity<?> debugCompany(@PathVariable String email) {
+        try {
+            return authService.debugCompany(email);
+        } catch (Exception e) {
+            return ResponseEntity.internalServerError().body("Debug failed: " + e.getMessage());
+        }
+    }
 }

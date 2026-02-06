@@ -3,6 +3,7 @@ package SmartInternshipApp.InternHubBackend.service;
 import SmartInternshipApp.InternHubBackend.entity.Internship;
 import SmartInternshipApp.InternHubBackend.repository.InternshipRepository;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.stereotype.Service;
 import java.util.List;
 import java.util.Optional;
@@ -53,11 +54,17 @@ public class InternshipService {
     }
     
     public boolean deleteInternship(Long id) {
-        if (internshipRepository.existsById(id)) {
-            internshipRepository.deleteById(id);
-            return true;
+        try {
+            if (internshipRepository.existsById(id)) {
+                internshipRepository.deleteById(id);
+                return true;
+            }
+            return false;
+        } catch (org.springframework.dao.DataIntegrityViolationException e) {
+            throw new RuntimeException("Cannot delete internship. It has related applications that must be removed first.");
+        } catch (Exception e) {
+            throw new RuntimeException("Error deleting internship: " + e.getMessage());
         }
-        return false;
     }
     
     // Location-based search methods

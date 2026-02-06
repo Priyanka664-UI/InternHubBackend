@@ -46,8 +46,32 @@ public class AdminCertificateController {
     }
     
     @GetMapping
-    public ResponseEntity<List<Map<String, Object>>> getAllCertificates() {
+    public ResponseEntity<List<Map<String, Object>>> getAllCertificates(
+            @RequestHeader(value = "X-User-Type", required = false) Integer userType,
+            @RequestHeader(value = "X-Company-Id", required = false) Long companyId) {
+        
+        System.out.println("=== GET CERTIFICATES ===");
+        System.out.println("User Type: " + userType);
+        System.out.println("Company ID: " + companyId);
+        
         List<Certificate> certificates = certificateService.getAllCertificates();
+        System.out.println("Total certificates before filter: " + certificates.size());
+        
+        // Filter by company if user_type = 2
+        if (userType != null && userType == 2 && companyId != null) {
+            certificates = certificates.stream()
+                .filter(cert -> {
+                    boolean match = cert.getInternship() != null && 
+                                   companyId.equals(cert.getInternship().getCompanyId());
+                    System.out.println("Certificate " + cert.getId() + ": internship companyId=" + 
+                        (cert.getInternship() != null ? cert.getInternship().getCompanyId() : "null") + 
+                        ", match=" + match);
+                    return match;
+                })
+                .collect(Collectors.toList());
+            System.out.println("Certificates after filter: " + certificates.size());
+        }
+        
         List<Map<String, Object>> response = certificates.stream().map(cert -> {
             Map<String, Object> map = new HashMap<>();
             map.put("id", cert.getId());

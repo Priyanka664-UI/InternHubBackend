@@ -44,9 +44,15 @@ public class CertificateFileController {
     }
     
     @GetMapping("/list")
-    public ResponseEntity<List<Map<String, Object>>> listCertificates() {
+    public ResponseEntity<List<Map<String, Object>>> listCertificates(
+            @RequestHeader(value = "X-User-Type", required = false) Integer userType,
+            @RequestHeader(value = "X-Company-Id", required = false) Long companyId,
+            @RequestParam(value = "companyName", required = false) String filterCompanyName) {
         try {
             System.out.println("Certificate directory: " + CERT_DIR);
+            System.out.println("User Type: " + userType);
+            System.out.println("Company ID: " + companyId);
+            
             File dir = new File(CERT_DIR);
             System.out.println("Directory exists: " + dir.exists());
             if (!dir.exists()) return ResponseEntity.ok(new ArrayList<>());
@@ -67,6 +73,14 @@ public class CertificateFileController {
                     System.out.println("Processing: " + fileName);
                     System.out.println("Internship: " + internshipTitle);
                     System.out.println("Company: " + companyName);
+                    
+                    // Filter by company if user_type = 2
+                    if (userType != null && userType == 2 && filterCompanyName != null) {
+                        if (!companyName.equalsIgnoreCase(filterCompanyName)) {
+                            System.out.println("Skipping - company mismatch: " + companyName + " != " + filterCompanyName);
+                            continue;
+                        }
+                    }
                     
                     Map<String, Object> cert = new HashMap<>();
                     cert.put("certificateNumber", parts[0]);
@@ -106,9 +120,30 @@ public class CertificateFileController {
         try {
             File file = new File(CERT_DIR, fileName);
             String content = new String(Files.readAllBytes(file.toPath()));
-            return ResponseEntity.ok(content);
+            return ResponseEntity.ok()
+                .header("Content-Type", "text/html")
+                .header("Content-Disposition", "inline; filename=\"" + fileName + "\"")
+                .body(content);
         } catch (Exception e) {
             return ResponseEntity.notFound().build();
+        }
+    }
+    
+    @GetMapping("/download/{fileName}")
+    public ResponseEntity<org.springframework.core.io.Resource> downloadCertificate(@PathVariable String fileName) {
+        try {
+            File file = new File(CERT_DIR, fileName);
+            if (!file.exists()) {
+                return ResponseEntity.notFound().build();
+            }
+            
+            org.springframework.core.io.Resource resource = new org.springframework.core.io.FileSystemResource(file);
+            return ResponseEntity.ok()
+                .header("Content-Type", "text/html")
+                .header("Content-Disposition", "attachment; filename=\"" + fileName + "\"")
+                .body(resource);
+        } catch (Exception e) {
+            return ResponseEntity.internalServerError().build();
         }
     }
 }
