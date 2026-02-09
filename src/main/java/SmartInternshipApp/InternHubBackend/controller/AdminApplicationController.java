@@ -65,9 +65,16 @@ public class AdminApplicationController {
     }
     
     @PutMapping("/{applicationId}/status")
-    public ResponseEntity<Map<String, Object>> updateApplicationStatus(
+    public ResponseEntity<?> updateApplicationStatus(
             @PathVariable Long applicationId, 
-            @RequestBody Map<String, String> request) {
+            @RequestBody Map<String, String> request,
+            @RequestHeader(value = "X-User-Type", required = false) Integer userType) {
+        
+        // Only company admin (user_type = 2) can update application status
+        if (userType == null || userType != 2) {
+            return ResponseEntity.status(403).body("Only company admin can update application status");
+        }
+        
         InternshipApplication application = applicationRepository.findById(applicationId)
                 .orElseThrow(() -> new RuntimeException("Application not found"));
         String newStatus = request.get("status");

@@ -46,17 +46,10 @@ public class AttendanceService {
             }
             Group group = groupOpt.get();
             
-            // Verify student is member of the group
+            // Verify student is member of the group or is the group leader
             if (!groupMemberRepository.existsByGroupAndStudent(group, student)) {
-                // If student is the group leader, automatically add them as a member
-                if (group.getLeader() != null && group.getLeader().getId().equals(student.getId())) {
-                    GroupMember leaderMember = new GroupMember();
-                    leaderMember.setGroup(group);
-                    leaderMember.setStudent(student);
-                    leaderMember.setStudentName(student.getFullName());
-                    leaderMember.setStatus(GroupMember.MemberStatus.APPROVED);
-                    groupMemberRepository.save(leaderMember);
-                } else {
+                // If student is the group leader, they can check in
+                if (group.getLeader() == null || !group.getLeader().getId().equals(student.getId())) {
                     return new AttendanceResponse("You are not enrolled in this internship group");
                 }
             }
@@ -65,7 +58,9 @@ public class AttendanceService {
             LocalDate today = LocalDate.now();
             Optional<Attendance> existingAttendance = attendanceRepository.findByStudentAndAttendanceDate(student, today);
             if (existingAttendance.isPresent()) {
-                return new AttendanceResponse("Attendance already marked for today");
+                Attendance existing = existingAttendance.get();
+                return new AttendanceResponse("You have already checked in today at " + 
+                    existing.getCheckInTime().toLocalTime().toString());
             }
             
             // Get company location

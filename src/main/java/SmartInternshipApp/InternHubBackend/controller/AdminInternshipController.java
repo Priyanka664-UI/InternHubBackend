@@ -41,13 +41,17 @@ public class AdminInternshipController {
     }
     
     @PostMapping
-    public ResponseEntity<Internship> createInternship(
+    public ResponseEntity<?> createInternship(
             @RequestBody Internship internship,
             @RequestHeader(value = "X-User-Type", required = false) Integer userType,
             @RequestHeader(value = "X-Company-Id", required = false) Long companyId) {
         
-        // If company user, automatically set companyId
-        if (userType != null && userType == 2 && companyId != null) {
+        // Only company admin (user_type = 2) can create internships
+        if (userType == null || userType != 2) {
+            return ResponseEntity.status(403).body("Only company admin can create internships");
+        }
+        
+        if (companyId != null) {
             internship.setCompanyId(companyId);
         }
         
@@ -55,13 +59,30 @@ public class AdminInternshipController {
     }
     
     @PutMapping("/{id}")
-    public ResponseEntity<Internship> updateInternship(@PathVariable Long id, @RequestBody Internship internship) {
+    public ResponseEntity<?> updateInternship(
+            @PathVariable Long id, 
+            @RequestBody Internship internship,
+            @RequestHeader(value = "X-User-Type", required = false) Integer userType) {
+        
+        // Only company admin (user_type = 2) can update internships
+        if (userType == null || userType != 2) {
+            return ResponseEntity.status(403).body("Only company admin can update internships");
+        }
+        
         Internship updated = internshipService.updateInternship(id, internship);
         return updated != null ? ResponseEntity.ok(updated) : ResponseEntity.notFound().build();
     }
     
     @DeleteMapping("/{id}")
-    public ResponseEntity<String> deleteInternship(@PathVariable Long id) {
+    public ResponseEntity<?> deleteInternship(
+            @PathVariable Long id,
+            @RequestHeader(value = "X-User-Type", required = false) Integer userType) {
+        
+        // Only company admin (user_type = 2) can delete internships
+        if (userType == null || userType != 2) {
+            return ResponseEntity.status(403).body("Only company admin can delete internships");
+        }
+        
         try {
             boolean deleted = internshipService.deleteInternship(id);
             return deleted ? ResponseEntity.ok("Internship deleted successfully") : ResponseEntity.notFound().build();

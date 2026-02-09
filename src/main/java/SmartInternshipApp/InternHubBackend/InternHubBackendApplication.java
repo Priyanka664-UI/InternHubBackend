@@ -11,7 +11,6 @@ import org.springframework.data.jpa.repository.config.EnableJpaRepositories;
 @EnableJpaRepositories("SmartInternshipApp.InternHubBackend.repository")
 @ComponentScan("SmartInternshipApp.InternHubBackend")
 public class InternHubBackendApplication {
-
 	public static void main(String[] args) {
 		SpringApplication.run(InternHubBackendApplication.class, args);
 	}
