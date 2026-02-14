@@ -111,6 +111,10 @@ public class AdminCompanyController {
                 response.put("message", "Company not found");
                 return ResponseEntity.status(HttpStatus.NOT_FOUND).body(response);
             }
+        } catch (RuntimeException e) {
+            response.put("success", false);
+            response.put("message", e.getMessage());
+            return ResponseEntity.status(HttpStatus.CONFLICT).body(response);
         } catch (Exception e) {
             response.put("success", false);
             response.put("message", "Error deleting company: " + e.getMessage());

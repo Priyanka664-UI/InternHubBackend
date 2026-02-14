@@ -5,6 +5,9 @@ import SmartInternshipApp.InternHubBackend.entity.CompanyCategory;
 import SmartInternshipApp.InternHubBackend.repository.CompanyRepository;
 import SmartInternshipApp.InternHubBackend.repository.StateRepository;
 import SmartInternshipApp.InternHubBackend.repository.CityRepository;
+import SmartInternshipApp.InternHubBackend.repository.GroupRepository;
+import SmartInternshipApp.InternHubBackend.repository.InternshipRepository;
+import SmartInternshipApp.InternHubBackend.repository.GroupInvitationRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import java.util.List;
@@ -21,6 +24,12 @@ public class CompanyService {
     
     @Autowired
     private CityRepository cityRepository;
+    
+    @Autowired
+    private GroupRepository groupRepository;
+    
+    @Autowired
+    private GroupInvitationRepository groupInvitationRepository;
     
     public List<Company> getAllCompanies() {
         List<Company> companies = companyRepository.findAll(org.springframework.data.domain.Sort.by(org.springframework.data.domain.Sort.Direction.ASC, "id"));
@@ -80,11 +89,22 @@ public class CompanyService {
     }
     
     public boolean deleteCompany(Long id) {
-        if (companyRepository.existsById(id)) {
-            companyRepository.deleteById(id);
-            return true;
+        try {
+            if (companyRepository.existsById(id)) {
+                // Delete group invitations first
+                groupInvitationRepository.deleteByGroupCompanyId(id);
+                // Delete groups
+                groupRepository.deleteByCompanyId(id);
+                // Delete internships
+                internshipRepository.deleteByCompanyId(id);
+                // Delete company
+                companyRepository.deleteById(id);
+                return true;
+            }
+            return false;
+        } catch (Exception e) {
+            throw new RuntimeException("Cannot delete company. Error: " + e.getMessage(), e);
         }
-        return false;
     }
     
 

@@ -2,9 +2,11 @@ package SmartInternshipApp.InternHubBackend.repository;
 
 import SmartInternshipApp.InternHubBackend.entity.Internship;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
+import org.springframework.transaction.annotation.Transactional;
 import java.util.List;
 
 @Repository
@@ -24,4 +26,9 @@ public interface InternshipRepository extends JpaRepository<Internship, Long> {
     
     @Query("SELECT i FROM Internship i WHERE LOWER(i.company) LIKE LOWER(CONCAT('%', :companyName, '%'))")
     List<Internship> findByCompanyNameContaining(@Param("companyName") String companyName);
+    
+    @Modifying
+    @Transactional
+    @Query("DELETE FROM Internship i WHERE i.companyId = ?1")
+    void deleteByCompanyId(Long companyId);
 }

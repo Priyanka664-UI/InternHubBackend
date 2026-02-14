@@ -3,9 +3,11 @@ package SmartInternshipApp.InternHubBackend.repository;
 import SmartInternshipApp.InternHubBackend.entity.GroupInvitation;
 import SmartInternshipApp.InternHubBackend.entity.GroupInvitation.InvitationStatus;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 import java.util.Optional;
@@ -30,4 +32,9 @@ public interface GroupInvitationRepository extends JpaRepository<GroupInvitation
     Long countPendingInvitationsByUserId(@Param("userId") Long userId);
     
     boolean existsByGroupIdAndInviteeEmail(Long groupId, String inviteeEmail);
+    
+    @Modifying
+    @Transactional
+    @Query("DELETE FROM GroupInvitation gi WHERE gi.group.id IN (SELECT g.id FROM Group g WHERE g.company.id = ?1)")
+    void deleteByGroupCompanyId(Long companyId);
 }

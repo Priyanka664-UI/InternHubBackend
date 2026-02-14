@@ -63,7 +63,7 @@ public class Group {
     @Enumerated(EnumType.STRING)
     private GroupStatus status = GroupStatus.PENDING;
     
-    @ManyToOne(fetch = FetchType.EAGER)
+    @ManyToOne(fetch = FetchType.EAGER, cascade = CascadeType.REMOVE)
     @JoinColumn(name = "company_id")
     @JsonIgnoreProperties({"hibernateLazyInitializer", "handler"})
     private Company company;

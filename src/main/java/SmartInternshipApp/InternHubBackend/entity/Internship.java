@@ -1,6 +1,7 @@
 package SmartInternshipApp.InternHubBackend.entity;
 
 import jakarta.persistence.*;
+import com.fasterxml.jackson.annotation.JsonIgnore;
 
 @Entity
 @Table(name = "internships")
@@ -36,6 +37,14 @@ public class Internship {
     
     @Column(name = "company_id")
     private Long companyId;
+    
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "company_id", insertable = false, updatable = false)
+    private Company company_entity;
+    
+    @OneToMany(mappedBy = "internship", cascade = CascadeType.REMOVE, orphanRemoval = true)
+    @JsonIgnore
+    private java.util.List<InternshipApplication> applications;
     
     @Column(name = "is_paid")
     private Boolean isPaid;
@@ -82,4 +91,7 @@ public class Internship {
     
     public Boolean getIsPaid() { return isPaid; }
     public void setIsPaid(Boolean isPaid) { this.isPaid = isPaid; }
+    
+    public java.util.List<InternshipApplication> getApplications() { return applications; }
+    public void setApplications(java.util.List<InternshipApplication> applications) { this.applications = applications; }
 }
