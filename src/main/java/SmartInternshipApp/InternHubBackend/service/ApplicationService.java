@@ -119,12 +119,16 @@ public class ApplicationService {
 
         if (studentIdFile != null && !studentIdFile.isEmpty()) {
             String studentIdUrl = saveFile(studentIdFile, savedApp.getId(), "studentId");
-            savedApp.setStudentIdUrl(studentIdUrl);
+            if (studentIdUrl != null) {
+                savedApp.setStudentIdUrl(studentIdUrl);
+            }
         }
 
         if (resumeFile != null && !resumeFile.isEmpty()) {
             String resumeUrl = saveFile(resumeFile, savedApp.getId(), "resume");
-            savedApp.setResumeUrl(resumeUrl);
+            if (resumeUrl != null) {
+                savedApp.setResumeUrl(resumeUrl);
+            }
         }
         
         applicationRepository.save(savedApp);
@@ -152,17 +156,25 @@ public class ApplicationService {
         throw new RuntimeException("Invalid token format");
     }
 
-    private String saveFile(MultipartFile file, Long applicationId, String type) throws Exception {
-        Path dirPath = Paths.get(uploadDir);
-        if (!Files.exists(dirPath)) {
-            Files.createDirectories(dirPath);
-        }
+    private String saveFile(MultipartFile file, Long applicationId, String type) {
+        try {
+            String uploadPath = uploadDir != null && !uploadDir.isEmpty() ? uploadDir : System.getProperty("user.home") + "/internhub/uploads";
+            Path dirPath = Paths.get(uploadPath).toAbsolutePath();
+            
+            if (!Files.exists(dirPath)) {
+                Files.createDirectories(dirPath);
+            }
 
-        String fileName = "app" + applicationId + "_" + type + "_" + System.currentTimeMillis() + 
-                "_" + file.getOriginalFilename();
-        Path filePath = dirPath.resolve(fileName);
-        Files.write(filePath, file.getBytes());
-        
-        return fileName;
+            String fileName = "app" + applicationId + "_" + type + "_" + System.currentTimeMillis() + 
+                    "_" + file.getOriginalFilename();
+            Path filePath = dirPath.resolve(fileName);
+            Files.write(filePath, file.getBytes());
+            
+            return fileName;
+        } catch (Exception e) {
+            System.err.println("Error saving file: " + e.getMessage());
+            e.printStackTrace();
+            return null;
+        }
     }
 }
