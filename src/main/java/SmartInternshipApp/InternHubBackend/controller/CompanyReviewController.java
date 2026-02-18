@@ -1,6 +1,7 @@
 package SmartInternshipApp.InternHubBackend.controller;
 
 import SmartInternshipApp.InternHubBackend.entity.CompanyReview;
+import SmartInternshipApp.InternHubBackend.dto.ReviewDTO;
 import SmartInternshipApp.InternHubBackend.service.CompanyReviewService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
@@ -18,13 +19,13 @@ public class CompanyReviewController {
     private CompanyReviewService reviewService;
 
     @GetMapping("/company/{companyId}")
-    public ResponseEntity<List<CompanyReview>> getCompanyReviews(@PathVariable Long companyId) {
-        return ResponseEntity.ok(reviewService.getCompanyReviews(companyId));
+    public ResponseEntity<List<ReviewDTO>> getCompanyReviews(@PathVariable Long companyId) {
+        return ResponseEntity.ok(reviewService.getCompanyReviewsDTO(companyId));
     }
 
     @GetMapping("/all")
-    public ResponseEntity<List<CompanyReview>> getAllReviews() {
-        return ResponseEntity.ok(reviewService.getAllReviews());
+    public ResponseEntity<List<ReviewDTO>> getAllReviews() {
+        return ResponseEntity.ok(reviewService.getAllReviewsDTO());
     }
 
     @GetMapping("/company/{companyId}/stats")

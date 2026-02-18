@@ -1,10 +1,12 @@
 package SmartInternshipApp.InternHubBackend.entity;
 
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import jakarta.persistence.*;
 import java.time.LocalDate;
 
 @Entity
 @Table(name = "students")
+@JsonIgnoreProperties({"hibernateLazyInitializer", "handler", "password", "verificationToken"})
 public class Student {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
