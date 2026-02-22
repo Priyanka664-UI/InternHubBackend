@@ -51,6 +51,15 @@ public class InternshipApplication {
     @Column(name = "resume_url")
     private String resumeUrl;
     
+    @Column(name = "payment_status")
+    private String paymentStatus;
+    
+    @Column(name = "payment_amount")
+    private Double paymentAmount;
+    
+    @Column(name = "payment_id")
+    private String paymentId;
+    
     public enum ApplicationStatus {
         PENDING, ACCEPTED, REJECTED, COMPLETED
     }
@@ -101,4 +110,13 @@ public class InternshipApplication {
     
     public ApplicationType getApplicationType() { return applicationType; }
     public void setApplicationType(ApplicationType applicationType) { this.applicationType = applicationType; }
+    
+    public String getPaymentStatus() { return paymentStatus; }
+    public void setPaymentStatus(String paymentStatus) { this.paymentStatus = paymentStatus; }
+    
+    public Double getPaymentAmount() { return paymentAmount; }
+    public void setPaymentAmount(Double paymentAmount) { this.paymentAmount = paymentAmount; }
+    
+    public String getPaymentId() { return paymentId; }
+    public void setPaymentId(String paymentId) { this.paymentId = paymentId; }
 }

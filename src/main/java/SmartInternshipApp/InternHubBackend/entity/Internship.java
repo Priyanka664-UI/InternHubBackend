@@ -49,6 +49,12 @@ public class Internship {
     @Column(name = "is_paid")
     private Boolean isPaid;
     
+    @Column(name = "application_fee")
+    private Double applicationFee;
+    
+    @Column(name = "requires_payment")
+    private Boolean requiresPayment;
+    
     // Constructors
     public Internship() {}
     
@@ -91,6 +97,12 @@ public class Internship {
     
     public Boolean getIsPaid() { return isPaid; }
     public void setIsPaid(Boolean isPaid) { this.isPaid = isPaid; }
+    
+    public Double getApplicationFee() { return applicationFee; }
+    public void setApplicationFee(Double applicationFee) { this.applicationFee = applicationFee; }
+    
+    public Boolean getRequiresPayment() { return requiresPayment; }
+    public void setRequiresPayment(Boolean requiresPayment) { this.requiresPayment = requiresPayment; }
     
     public java.util.List<InternshipApplication> getApplications() { return applications; }
     public void setApplications(java.util.List<InternshipApplication> applications) { this.applications = applications; }

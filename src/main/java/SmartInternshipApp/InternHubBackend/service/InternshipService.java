@@ -48,6 +48,8 @@ public class InternshipService {
             internship.setCityId(internshipDetails.getCityId());
             internship.setWorkType(internshipDetails.getWorkType());
             internship.setIsPaid(internshipDetails.getIsPaid());
+            internship.setApplicationFee(internshipDetails.getApplicationFee());
+            internship.setRequiresPayment(internshipDetails.getRequiresPayment());
             return internshipRepository.save(internship);
         }
         return null;

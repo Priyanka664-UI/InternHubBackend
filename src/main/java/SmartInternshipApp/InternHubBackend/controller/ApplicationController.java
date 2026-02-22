@@ -32,6 +32,9 @@ public class ApplicationController {
             @RequestParam(value = "skills", required = false) String skills,
             @RequestParam(value = "experience", required = false) String experience,
             @RequestParam(value = "motivation", required = false) String motivation,
+            @RequestParam(value = "paymentStatus", required = false) String paymentStatus,
+            @RequestParam(value = "paymentAmount", required = false) Double paymentAmount,
+            @RequestParam(value = "paymentId", required = false) String paymentId,
             @RequestParam(value = "studentId", required = false) MultipartFile studentIdFile,
             @RequestParam(value = "resume", required = false) MultipartFile resumeFile,
             @RequestHeader(value = "Authorization", required = false) String token) {
@@ -41,6 +44,7 @@ public class ApplicationController {
             System.out.println("Received application: internshipId=" + internshipId);
             System.out.println("College: " + college + ", Degree: " + degree + ", Year: " + yearOfStudy);
             System.out.println("GroupId: " + groupId + ", ApplicationType: " + applicationType);
+            System.out.println("Payment Status: " + paymentStatus + ", Payment Amount: " + paymentAmount + ", Payment ID: " + paymentId);
             if ("GROUP".equals(applicationType)) {
                 System.out.println("Team Size: " + teamSize + ", Team Leader: " + teamLeader);
                 System.out.println("Leader Contact: " + leaderContact + ", Leader Email: " + leaderEmail);
@@ -52,7 +56,7 @@ public class ApplicationController {
             applicationService.submitApplication(internshipId, college, degree, yearOfStudy, 
                     groupId, applicationType, teamSize, teamLeader, leaderContact, leaderEmail,
                     teamMembers, memberEmails, academicYear, semester, skills, experience, 
-                    motivation, studentIdFile, resumeFile, token);
+                    motivation, paymentStatus, paymentAmount, paymentId, studentIdFile, resumeFile, token);
             
             System.out.println("=== Application Submitted Successfully ===");
             return ResponseEntity.ok().body("{\"message\": \"Application submitted successfully\"}");

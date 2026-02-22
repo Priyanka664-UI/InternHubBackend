@@ -14,6 +14,13 @@ public class InternshipController {
     @Autowired
     private InternshipService internshipService;
     
+    @GetMapping("/{id}")
+    public ResponseEntity<Internship> getInternshipById(@PathVariable Long id) {
+        return internshipService.getInternshipById(id)
+                .map(ResponseEntity::ok)
+                .orElse(ResponseEntity.notFound().build());
+    }
+    
     @GetMapping("/company/{companyId}")
     public ResponseEntity<List<Internship>> getInternshipsByCompany(
             @PathVariable Long companyId,

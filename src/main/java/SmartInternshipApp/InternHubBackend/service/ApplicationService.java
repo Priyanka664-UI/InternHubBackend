@@ -45,6 +45,7 @@ public class ApplicationService {
                                    Integer teamSize, String teamLeader, String leaderContact, String leaderEmail,
                                    String teamMembers, String memberEmails, String academicYear, String semester,
                                    String skills, String experience, String motivation,
+                                   String paymentStatus, Double paymentAmount, String paymentId,
                                    MultipartFile studentIdFile, MultipartFile resumeFile, String token) throws Exception {
         
         if (token == null || token.isEmpty()) {
@@ -114,6 +115,17 @@ public class ApplicationService {
         application.setCollege(college);
         application.setDegree(degree);
         application.setYearOfStudy(yearOfStudy);
+        
+        // Set payment information
+        if (paymentStatus != null) {
+            application.setPaymentStatus(paymentStatus);
+        }
+        if (paymentAmount != null) {
+            application.setPaymentAmount(paymentAmount);
+        }
+        if (paymentId != null) {
+            application.setPaymentId(paymentId);
+        }
 
         InternshipApplication savedApp = applicationRepository.save(application);
 
