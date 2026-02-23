@@ -29,6 +29,9 @@ public class CompanyService {
     private GroupRepository groupRepository;
     
     @Autowired
+    private InternshipRepository internshipRepository;
+    
+    @Autowired
     private GroupInvitationRepository groupInvitationRepository;
     
     public List<Company> getAllCompanies() {
