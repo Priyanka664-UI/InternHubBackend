@@ -28,8 +28,18 @@ public class AuthController {
     @PostMapping("/login")
     public ResponseEntity<?> login(@RequestBody LoginRequest request) {
         try {
+            System.out.println("Received login request: " + request);
+            
+            if (request.getEmail() == null || request.getEmail().trim().isEmpty()) {
+                return ResponseEntity.badRequest().body("Email is required");
+            }
+            if (request.getPassword() == null || request.getPassword().isEmpty()) {
+                return ResponseEntity.badRequest().body("Password is required");
+            }
+            
             return authService.login(request);
         } catch (Exception e) {
+            e.printStackTrace();
             return ResponseEntity.internalServerError().body("Login failed: " + e.getMessage());
         }
     }
@@ -76,6 +86,26 @@ public class AuthController {
             return authService.debugCompany(email);
         } catch (Exception e) {
             return ResponseEntity.internalServerError().body("Debug failed: " + e.getMessage());
+        }
+    }
+    
+    @PostMapping("/create-test-user")
+    public ResponseEntity<?> createTestUser() {
+        try {
+            RegistrationRequest testUser = new RegistrationRequest();
+            testUser.setFullName("Test User");
+            testUser.setEmail("test@test.com");
+            testUser.setPassword("test123");
+            testUser.setBirthDate(java.time.LocalDate.of(2000, 1, 1));
+            testUser.setGender(SmartInternshipApp.InternHubBackend.entity.Student.Gender.MALE);
+            testUser.setCollege("Test College");
+            testUser.setCourse("Computer Science");
+            
+            String result = authService.register(testUser);
+            return ResponseEntity.ok(result);
+        } catch (Exception e) {
+            e.printStackTrace();
+            return ResponseEntity.internalServerError().body("Failed to create test user: " + e.getMessage());
         }
     }
 }
