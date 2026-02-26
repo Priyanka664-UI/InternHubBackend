@@ -10,6 +10,7 @@ import SmartInternshipApp.InternHubBackend.repository.GroupMemberRepository;
 import SmartInternshipApp.InternHubBackend.repository.GroupInvitationRepository;
 import SmartInternshipApp.InternHubBackend.repository.StudentRepository;
 import SmartInternshipApp.InternHubBackend.repository.CompanyRepository;
+import SmartInternshipApp.InternHubBackend.service.NotificationService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -33,6 +34,9 @@ public class GroupService {
     
     @Autowired
     private CompanyRepository companyRepository;
+    
+    @Autowired
+    private NotificationService notificationService;
     
     public Group createGroup(Group group, Long leaderId) {
         Optional<Student> leader = studentRepository.findById(leaderId);
@@ -98,13 +102,62 @@ public class GroupService {
             if (student.isPresent()) {
                 memberData.setGroup(inv.getGroup());
                 memberData.setStudent(student.get());
+                memberData.setStatus(GroupMember.MemberStatus.APPROVED);
                 GroupMember member = groupMemberRepository.save(memberData);
                 
                 // Update invitation status
                 inv.setStatus(GroupInvitation.InvitationStatus.ACCEPTED);
+                inv.setInviteeId(student.get().getId());
                 invitationRepository.save(inv);
                 
+                // Send notification to group leader
+                Group group = inv.getGroup();
+                if (group.getLeader() != null) {
+                    notificationService.createNotification(
+                        group.getLeader().getId(),
+                        "Invitation Accepted",
+                        student.get().getFullName() + " has accepted your invitation to join " + group.getGroupName(),
+                        "INVITATION_ACCEPTED"
+                    );
+                }
+                
                 return member;
+            }
+        }
+        throw new RuntimeException("Invalid or expired invitation");
+    }
+    
+    public GroupMember acceptInvitationWithDocuments(String token, Long userId, String studentIdUrl, String resumeUrl, String requestLetterUrl, String githubLink) {
+        Optional<GroupInvitation> invitation = invitationRepository.findByInvitationToken(token);
+        if (invitation.isPresent() && invitation.get().getStatus() == GroupInvitation.InvitationStatus.PENDING) {
+            GroupInvitation inv = invitation.get();
+            
+            Optional<Student> student = studentRepository.findById(userId);
+            if (student.isPresent()) {
+                // Check if already a member
+                if (groupMemberRepository.existsByGroupAndStudent(inv.getGroup(), student.get())) {
+                    throw new RuntimeException("Already a member of this group");
+                }
+                
+                // Create group member with documents
+                GroupMember member = new GroupMember();
+                member.setGroup(inv.getGroup());
+                member.setStudent(student.get());
+                member.setStudentName(student.get().getFullName());
+                member.setStudentIdDocumentUrl(studentIdUrl);
+                member.setResumeUrl(resumeUrl);
+                member.setInternshipRequestLetterUrl(requestLetterUrl);
+                member.setGithubLink(githubLink);
+                member.setStatus(GroupMember.MemberStatus.APPROVED);
+                
+                GroupMember savedMember = groupMemberRepository.save(member);
+                
+                // Update invitation status
+                inv.setStatus(GroupInvitation.InvitationStatus.ACCEPTED);
+                inv.setInviteeId(userId);
+                invitationRepository.save(inv);
+                
+                return savedMember;
             }
         }
         throw new RuntimeException("Invalid or expired invitation");
@@ -160,7 +213,15 @@ public class GroupService {
     }
     
     public Optional<Group> getGroupById(Long id) {
-        return groupRepository.findById(id);
+        Optional<Group> groupOpt = groupRepository.findById(id);
+        if (groupOpt.isPresent()) {
+            Group group = groupOpt.get();
+            // Force load company data
+            if (group.getCompany() != null) {
+                group.getCompany().getName();
+            }
+        }
+        return groupOpt;
     }
     
     public Group updateGroupStatus(Long groupId, Group.GroupStatus status) {
@@ -206,30 +267,77 @@ public class GroupService {
             
             // Check if user is a member of any group
             List<GroupMember> memberships = groupMemberRepository.findByStudent(student.get());
-            if (!memberships.isEmpty()) {
+            if (!memberships.isEmpty() && memberships.get(0).getStatus() == GroupMember.MemberStatus.APPROVED) {
                 return memberships.get(0).getGroup();
             }
         }
         return null;
     }
     
+    public List<Group> getAllUserGroups(Long userId) {
+        List<Group> userGroups = new java.util.ArrayList<>();
+        Optional<Student> student = studentRepository.findById(userId);
+        
+        if (student.isPresent()) {
+            // Add groups where user is leader
+            List<Group> leaderGroups = groupRepository.findByLeader(student.get());
+            for (Group group : leaderGroups) {
+                // Force load company data
+                if (group.getCompany() != null) {
+                    group.getCompany().getName();
+                }
+                userGroups.add(group);
+            }
+            
+            // Add groups where user is member
+            List<GroupMember> memberships = groupMemberRepository.findByStudent(student.get());
+            for (GroupMember membership : memberships) {
+                if (membership.getStatus() == GroupMember.MemberStatus.APPROVED) {
+                    Group group = membership.getGroup();
+                    // Force load company data
+                    if (group.getCompany() != null) {
+                        group.getCompany().getName();
+                    }
+                    // Avoid duplicates if user is both leader and member
+                    if (!userGroups.contains(group)) {
+                        userGroups.add(group);
+                    }
+                }
+            }
+        }
+        return userGroups;
+    }
+    
     public Group joinCompany(Long groupId, Long companyId) {
+        System.out.println("joinCompany called: groupId=" + groupId + ", companyId=" + companyId);
         Optional<Group> groupOpt = groupRepository.findById(groupId);
         Optional<Company> companyOpt = companyRepository.findById(companyId);
         
         if (groupOpt.isPresent() && companyOpt.isPresent()) {
             Group group = groupOpt.get();
-            group.setCompany(companyOpt.get());
+            Company company = companyOpt.get();
+            System.out.println("Setting company " + company.getName() + " for group " + group.getGroupName());
+            group.setCompany(company);
             group.setStatus(Group.GroupStatus.APPLIED);
-            return groupRepository.save(group);
+            Group savedGroup = groupRepository.save(group);
+            System.out.println("Group saved with company: " + (savedGroup.getCompany() != null ? savedGroup.getCompany().getName() : "null"));
+            return savedGroup;
         }
         throw new RuntimeException("Group or Company not found");
     }
     
     public Long getGroupCompanyId(Long groupId) {
+        System.out.println("getGroupCompanyId called for groupId: " + groupId);
         Optional<Group> group = groupRepository.findById(groupId);
-        if (group.isPresent() && group.get().getCompany() != null) {
-            return group.get().getCompany().getId();
+        if (group.isPresent()) {
+            System.out.println("Group found: " + group.get().getGroupName());
+            Company company = group.get().getCompany();
+            System.out.println("Company: " + (company != null ? company.getName() + " (ID: " + company.getId() + ")" : "null"));
+            if (company != null) {
+                return company.getId();
+            }
+        } else {
+            System.out.println("Group not found for ID: " + groupId);
         }
         return null;
     }

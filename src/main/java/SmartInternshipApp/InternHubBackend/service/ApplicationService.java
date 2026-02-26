@@ -4,10 +4,12 @@ import SmartInternshipApp.InternHubBackend.entity.Internship;
 import SmartInternshipApp.InternHubBackend.entity.InternshipApplication;
 import SmartInternshipApp.InternHubBackend.entity.Student;
 import SmartInternshipApp.InternHubBackend.entity.Group;
+import SmartInternshipApp.InternHubBackend.entity.GroupMemberDocument;
 import SmartInternshipApp.InternHubBackend.repository.InternshipApplicationRepository;
 import SmartInternshipApp.InternHubBackend.repository.InternshipRepository;
 import SmartInternshipApp.InternHubBackend.repository.StudentRepository;
 import SmartInternshipApp.InternHubBackend.repository.GroupRepository;
+import SmartInternshipApp.InternHubBackend.repository.GroupMemberDocumentRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
@@ -34,6 +36,9 @@ public class ApplicationService {
     @Autowired
     private GroupRepository groupRepository;
 
+    @Autowired
+    private GroupMemberDocumentRepository memberDocumentRepository;
+
     @Value("${file.upload.dir}")
     private String uploadDir;
 
@@ -46,7 +51,7 @@ public class ApplicationService {
                                    String teamMembers, String memberEmails, String academicYear, String semester,
                                    String skills, String experience, String motivation,
                                    String paymentStatus, Double paymentAmount, String paymentId,
-                                   MultipartFile studentIdFile, MultipartFile resumeFile, String token) throws Exception {
+                                   MultipartFile studentIdFile, MultipartFile resumeFile, MultipartFile invitationLetterFile, String token) throws Exception {
         
         if (token == null || token.isEmpty()) {
             throw new RuntimeException("Authorization token is required");
@@ -143,6 +148,13 @@ public class ApplicationService {
             }
         }
         
+        if (invitationLetterFile != null && !invitationLetterFile.isEmpty()) {
+            String invitationUrl = saveFile(invitationLetterFile, savedApp.getId(), "invitation");
+            if (invitationUrl != null) {
+                savedApp.setInvitationLetterUrl(invitationUrl);
+            }
+        }
+        
         applicationRepository.save(savedApp);
          
         try {
@@ -156,6 +168,38 @@ public class ApplicationService {
                 notificationMessage,
                 "SUCCESS"
             );
+            
+            // Send notifications to group members if it's a group application
+            if (groupId != null && memberEmails != null && !memberEmails.trim().isEmpty()) {
+                String[] emails = memberEmails.split("[,\\n]+");
+                for (String email : emails) {
+                    email = email.trim();
+                    if (!email.isEmpty()) {
+                        try {
+                            Student member = studentRepository.findByEmail(email).orElse(null);
+                            if (member != null) {
+                                // Create pending document record for member
+                                GroupMemberDocument memberDoc = new GroupMemberDocument();
+                                memberDoc.setApplication(savedApp);
+                                memberDoc.setStudent(member);
+                                memberDoc.setStatus("PENDING");
+                                memberDocumentRepository.save(memberDoc);
+                                
+                                // Send notification
+                                notificationService.createNotification(
+                                    member.getId(),
+                                    "Upload Your Documents",
+                                    "Your group has applied for " + internship.getTitle() + 
+                                    ". Please upload your Student ID Card and Resume. Application ID: " + savedApp.getId(),
+                                    "ACTION_REQUIRED"
+                                );
+                            }
+                        } catch (Exception e) {
+                            System.err.println("Failed to notify member " + email + ": " + e.getMessage());
+                        }
+                    }
+                }
+            }
         } catch (Exception e) {
             System.err.println("Failed to create notification: " + e.getMessage());
         }
@@ -188,5 +232,12 @@ public class ApplicationService {
             e.printStackTrace();
             return null;
         }
+    }
+
+    public InternshipApplication getApplicationByGroupId(Long groupId) {
+        Group group = groupRepository.findById(groupId)
+                .orElseThrow(() -> new RuntimeException("Group not found"));
+        return applicationRepository.findByGroup(group)
+                .orElseThrow(() -> new RuntimeException("No application found for this group"));
     }
 }

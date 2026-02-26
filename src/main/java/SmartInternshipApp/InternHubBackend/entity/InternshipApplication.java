@@ -51,6 +51,9 @@ public class InternshipApplication {
     @Column(name = "resume_url")
     private String resumeUrl;
     
+    @Column(name = "invitation_letter_url")
+    private String invitationLetterUrl;
+    
     @Column(name = "payment_status")
     private String paymentStatus;
     
@@ -119,4 +122,7 @@ public class InternshipApplication {
     
     public String getPaymentId() { return paymentId; }
     public void setPaymentId(String paymentId) { this.paymentId = paymentId; }
+    
+    public String getInvitationLetterUrl() { return invitationLetterUrl; }
+    public void setInvitationLetterUrl(String invitationLetterUrl) { this.invitationLetterUrl = invitationLetterUrl; }
 }

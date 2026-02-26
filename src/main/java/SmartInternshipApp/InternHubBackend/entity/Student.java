@@ -29,6 +29,7 @@ public class Student {
     
     private String college;
     private String course;
+    private String phone;
     
     @Column(name = "is_verified")
     private boolean isVerified = false;
@@ -66,6 +67,9 @@ public class Student {
     
     public String getCourse() { return course; }
     public void setCourse(String course) { this.course = course; }
+    
+    public String getPhone() { return phone; }
+    public void setPhone(String phone) { this.phone = phone; }
     
     public boolean isVerified() { return isVerified; }
     public void setVerified(boolean verified) { isVerified = verified; }

@@ -23,6 +23,15 @@ public class GroupMember {
     @Column(name = "github_link")
     private String githubLink;
     
+    @Column(name = "student_id_document_url")
+    private String studentIdDocumentUrl;
+    
+    @Column(name = "resume_url")
+    private String resumeUrl;
+    
+    @Column(name = "internship_request_letter_url")
+    private String internshipRequestLetterUrl;
+    
     @Enumerated(EnumType.STRING)
     private MemberStatus status = MemberStatus.PENDING;
     
@@ -47,6 +56,15 @@ public class GroupMember {
     
     public MemberStatus getStatus() { return status; }
     public void setStatus(MemberStatus status) { this.status = status; }
+    
+    public String getStudentIdDocumentUrl() { return studentIdDocumentUrl; }
+    public void setStudentIdDocumentUrl(String studentIdDocumentUrl) { this.studentIdDocumentUrl = studentIdDocumentUrl; }
+    
+    public String getResumeUrl() { return resumeUrl; }
+    public void setResumeUrl(String resumeUrl) { this.resumeUrl = resumeUrl; }
+    
+    public String getInternshipRequestLetterUrl() { return internshipRequestLetterUrl; }
+    public void setInternshipRequestLetterUrl(String internshipRequestLetterUrl) { this.internshipRequestLetterUrl = internshipRequestLetterUrl; }
     
     public enum MemberStatus {
         PENDING, APPROVED, REJECTED, SELECTED
