@@ -6,6 +6,7 @@ import SmartInternshipApp.InternHubBackend.entity.Student;
 import SmartInternshipApp.InternHubBackend.entity.Company;
 import SmartInternshipApp.InternHubBackend.repository.StudentRepository;
 import SmartInternshipApp.InternHubBackend.repository.CompanyRepository;
+import SmartInternshipApp.InternHubBackend.util.JwtUtil;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -21,6 +22,9 @@ public class AuthService {
     
     @Autowired
     private CompanyRepository companyRepository;
+    
+    @Autowired
+    private JwtUtil jwtUtil;
     
     public String register(RegistrationRequest request) {
         try {
@@ -68,7 +72,8 @@ public class AuthService {
             }
             
             java.util.Map<String, Object> response = new java.util.HashMap<>();
-            response.put("token", "temp-token-" + student.get().getId());
+            String token = jwtUtil.generateToken(student.get().getEmail(), "STUDENT", student.get().getId());
+            response.put("token", token);
             response.put("student", student.get());
             return org.springframework.http.ResponseEntity.ok(response);
         } catch (Exception e) {
@@ -110,7 +115,8 @@ public class AuthService {
                 }
                 
                 java.util.Map<String, Object> response = new java.util.HashMap<>();
-                response.put("token", "admin-token-" + comp.getId());
+                String token = jwtUtil.generateToken(comp.getEmail(), "ADMIN", comp.getId());
+                response.put("token", token);
                 response.put("company", comp);
                 response.put("userType", comp.getUserType());
                 return org.springframework.http.ResponseEntity.ok(response);
@@ -131,7 +137,8 @@ public class AuthService {
             }
             
             java.util.Map<String, Object> response = new java.util.HashMap<>();
-            response.put("token", "admin-token-" + student.get().getId());
+            String token = jwtUtil.generateToken(student.get().getEmail(), "ADMIN", student.get().getId());
+            response.put("token", token);
             response.put("student", student.get());
             response.put("adminType", student.get().getIsAdmin());
             return org.springframework.http.ResponseEntity.ok(response);
@@ -167,7 +174,8 @@ public class AuthService {
             }
             
             java.util.Map<String, Object> response = new java.util.HashMap<>();
-            response.put("token", "company-token-" + comp.getId());
+            String token = jwtUtil.generateToken(comp.getEmail(), "COMPANY", comp.getId());
+            response.put("token", token);
             response.put("company", comp);
             response.put("userType", comp.getUserType());
             return org.springframework.http.ResponseEntity.ok(response);
@@ -290,6 +298,49 @@ public class AuthService {
             return org.springframework.http.ResponseEntity.ok(response);
         } catch (Exception e) {
             throw new RuntimeException("Debug failed: " + e.getMessage());
+        }
+    }
+    
+    public org.springframework.http.ResponseEntity<?> validateToken(String token) {
+        try {
+            if (!jwtUtil.isTokenValid(token)) {
+                return org.springframework.http.ResponseEntity.status(401).body("Invalid or expired token");
+            }
+            
+            String email = jwtUtil.getEmailFromToken(token);
+            io.jsonwebtoken.Claims claims = jwtUtil.validateToken(token);
+            String userType = claims.get("userType", String.class);
+            Long userId = claims.get("userId", Long.class);
+            
+            java.util.Map<String, Object> response = new java.util.HashMap<>();
+            
+            if ("STUDENT".equals(userType)) {
+                Optional<Student> student = studentRepository.findById(userId);
+                if (student.isEmpty()) {
+                    return org.springframework.http.ResponseEntity.status(401).body("User not found");
+                }
+                response.put("student", student.get());
+                response.put("token", token);
+            } else if ("COMPANY".equals(userType) || "ADMIN".equals(userType)) {
+                Optional<Company> company = companyRepository.findById(userId);
+                if (company.isPresent()) {
+                    response.put("company", company.get());
+                    response.put("userType", company.get().getUserType());
+                    response.put("token", token);
+                } else {
+                    Optional<Student> student = studentRepository.findById(userId);
+                    if (student.isEmpty()) {
+                        return org.springframework.http.ResponseEntity.status(401).body("User not found");
+                    }
+                    response.put("student", student.get());
+                    response.put("adminType", student.get().getIsAdmin());
+                    response.put("token", token);
+                }
+            }
+            
+            return org.springframework.http.ResponseEntity.ok(response);
+        } catch (Exception e) {
+            return org.springframework.http.ResponseEntity.status(401).body("Token validation failed: " + e.getMessage());
         }
     }
 }
