@@ -3,11 +3,14 @@ package SmartInternshipApp.InternHubBackend.controller;
 import SmartInternshipApp.InternHubBackend.entity.Group;
 import SmartInternshipApp.InternHubBackend.entity.GroupInvitation;
 import SmartInternshipApp.InternHubBackend.entity.GroupInvitation.InvitationStatus;
+import SmartInternshipApp.InternHubBackend.entity.GroupMember;
 import SmartInternshipApp.InternHubBackend.entity.Student;
 import SmartInternshipApp.InternHubBackend.repository.GroupRepository;
 import SmartInternshipApp.InternHubBackend.repository.GroupInvitationRepository;
+import SmartInternshipApp.InternHubBackend.repository.GroupMemberRepository;
 import SmartInternshipApp.InternHubBackend.repository.StudentRepository;
 import SmartInternshipApp.InternHubBackend.service.NotificationService;
+import SmartInternshipApp.InternHubBackend.service.GroupService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -33,6 +36,12 @@ public class GroupInvitationController {
     
     @Autowired
     private NotificationService notificationService;
+    
+    @Autowired
+    private GroupService groupService;
+    
+    @Autowired
+    private GroupMemberRepository groupMemberRepository;
     
     @PostMapping("/send")
     public ResponseEntity<?> sendInvitation(@RequestBody InvitationRequest request) {
@@ -160,15 +169,42 @@ public class GroupInvitationController {
             
             invitationRepository.save(invitation);
             
-            // Send notification to team creator when invitation is accepted
+            // If accepted, add member to group
             if (response.isAccepted()) {
-                Optional<Student> inviterStudent = studentRepository.findById(invitation.getInviterId());
                 Optional<Student> inviteeStudent = studentRepository.findById(response.getUserId());
-                
-                if (inviterStudent.isPresent() && inviteeStudent.isPresent()) {
-                    String title = "Invitation Accepted";
-                    String message = inviteeStudent.get().getFullName() + " has accepted your invitation to join " + invitation.getGroup().getGroupName();
-                    notificationService.createNotification(inviterStudent.get().getId(), title, message, "INVITATION_ACCEPTED");
+                if (inviteeStudent.isPresent()) {
+                    // Check if not already a member
+                    if (!groupMemberRepository.existsByGroupAndStudent(invitation.getGroup(), inviteeStudent.get())) {
+                        GroupMember member = new GroupMember();
+                        member.setGroup(invitation.getGroup());
+                        member.setStudent(inviteeStudent.get());
+                        member.setStudentName(inviteeStudent.get().getFullName());
+                        member.setStatus(GroupMember.MemberStatus.APPROVED);
+                        groupMemberRepository.save(member);
+                    }
+                }
+            }
+            
+            // Send notification to group creator/leader when invitation is accepted or rejected
+            Optional<Student> inviteeStudent = studentRepository.findById(response.getUserId());
+            
+            if (inviteeStudent.isPresent()) {
+                // Get group leader (creator)
+                Group group = invitation.getGroup();
+                if (group.getLeader() != null) {
+                    String title = response.isAccepted() ? "Invitation Accepted" : "Invitation Rejected";
+                    String message = inviteeStudent.get().getFullName() + 
+                            (response.isAccepted() ? 
+                                " has accepted your invitation to join " : 
+                                " has rejected your invitation to join ") + 
+                            group.getGroupName();
+                    
+                    notificationService.createNotification(
+                        group.getLeader().getId(), 
+                        title, 
+                        message, 
+                        response.isAccepted() ? "INVITATION_ACCEPTED" : "INVITATION_REJECTED"
+                    );
                 }
             }
             
@@ -176,6 +212,68 @@ public class GroupInvitationController {
             
         } catch (Exception e) {
             return ResponseEntity.badRequest().body("Error responding to invitation: " + e.getMessage());
+        }
+    }
+    
+    @PostMapping("/accept-with-documents/{token}")
+    public ResponseEntity<?> acceptInvitationWithDocuments(@PathVariable String token, @RequestBody AcceptInvitationRequest request) {
+        try {
+            // Validate required documents for group applications
+            if (request.getStudentIdDocumentUrl() == null || request.getStudentIdDocumentUrl().trim().isEmpty()) {
+                return ResponseEntity.badRequest().body("Student ID document is required");
+            }
+            if (request.getResumeUrl() == null || request.getResumeUrl().trim().isEmpty()) {
+                return ResponseEntity.badRequest().body("Resume is required");
+            }
+            if (request.getInternshipRequestLetterUrl() == null || request.getInternshipRequestLetterUrl().trim().isEmpty()) {
+                return ResponseEntity.badRequest().body("Internship request letter is required");
+            }
+            
+            // Call service to accept invitation and create group member with documents
+            groupService.acceptInvitationWithDocuments(
+                token,
+                request.getUserId(),
+                request.getStudentIdDocumentUrl(),
+                request.getResumeUrl(),
+                request.getInternshipRequestLetterUrl(),
+                request.getGithubLink()
+            );
+            
+            // Get invitation for notification
+            Optional<GroupInvitation> invitationOpt = invitationRepository.findByInvitationToken(token);
+            if (invitationOpt.isPresent()) {
+                GroupInvitation invitation = invitationOpt.get();
+                
+                // Send notification to group creator/leader
+                Optional<Student> inviteeStudent = studentRepository.findById(request.getUserId());
+                
+                if (inviteeStudent.isPresent()) {
+                    Group group = invitation.getGroup();
+                    if (group.getLeader() != null) {
+                        String title = "Invitation Accepted";
+                        String message = inviteeStudent.get().getFullName() + 
+                                " has accepted your invitation and uploaded documents for " + 
+                                group.getGroupName();
+                        notificationService.createNotification(
+                            group.getLeader().getId(), 
+                            title, 
+                            message, 
+                            "INVITATION_ACCEPTED"
+                        );
+                    }
+                }
+                
+                return ResponseEntity.ok().body(new AcceptInvitationResponse(
+                    "Invitation accepted successfully",
+                    invitation.getId(),
+                    invitation.getGroup().getId()
+                ));
+            }
+            
+            return ResponseEntity.ok("Invitation accepted successfully");
+            
+        } catch (Exception e) {
+            return ResponseEntity.badRequest().body("Error accepting invitation: " + e.getMessage());
         }
     }
     
@@ -210,5 +308,49 @@ public class GroupInvitationController {
         
         public Long getUserId() { return userId; }
         public void setUserId(Long userId) { this.userId = userId; }
+    }
+    
+    public static class AcceptInvitationRequest {
+        private Long userId;
+        private String studentIdDocumentUrl;
+        private String resumeUrl;
+        private String internshipRequestLetterUrl;
+        private String githubLink;
+        
+        public Long getUserId() { return userId; }
+        public void setUserId(Long userId) { this.userId = userId; }
+        
+        public String getStudentIdDocumentUrl() { return studentIdDocumentUrl; }
+        public void setStudentIdDocumentUrl(String studentIdDocumentUrl) { this.studentIdDocumentUrl = studentIdDocumentUrl; }
+        
+        public String getResumeUrl() { return resumeUrl; }
+        public void setResumeUrl(String resumeUrl) { this.resumeUrl = resumeUrl; }
+        
+        public String getInternshipRequestLetterUrl() { return internshipRequestLetterUrl; }
+        public void setInternshipRequestLetterUrl(String internshipRequestLetterUrl) { this.internshipRequestLetterUrl = internshipRequestLetterUrl; }
+        
+        public String getGithubLink() { return githubLink; }
+        public void setGithubLink(String githubLink) { this.githubLink = githubLink; }
+    }
+    
+    public static class AcceptInvitationResponse {
+        private String message;
+        private Long invitationId;
+        private Long groupId;
+        
+        public AcceptInvitationResponse(String message, Long invitationId, Long groupId) {
+            this.message = message;
+            this.invitationId = invitationId;
+            this.groupId = groupId;
+        }
+        
+        public String getMessage() { return message; }
+        public void setMessage(String message) { this.message = message; }
+        
+        public Long getInvitationId() { return invitationId; }
+        public void setInvitationId(Long invitationId) { this.invitationId = invitationId; }
+        
+        public Long getGroupId() { return groupId; }
+        public void setGroupId(Long groupId) { this.groupId = groupId; }
     }
 }

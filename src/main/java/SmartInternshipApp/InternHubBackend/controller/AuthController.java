@@ -108,4 +108,14 @@ public class AuthController {
             return ResponseEntity.internalServerError().body("Failed to create test user: " + e.getMessage());
         }
     }
+    
+    @PostMapping("/validate-token")
+    public ResponseEntity<?> validateToken(@RequestHeader("Authorization") String authHeader) {
+        try {
+            String token = authHeader.replace("Bearer ", "");
+            return authService.validateToken(token);
+        } catch (Exception e) {
+            return ResponseEntity.status(401).body("Invalid or expired token");
+        }
+    }
 }

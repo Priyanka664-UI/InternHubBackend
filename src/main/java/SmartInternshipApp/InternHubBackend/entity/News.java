@@ -1,5 +1,6 @@
 package SmartInternshipApp.InternHubBackend.entity;
 
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import jakarta.persistence.*;
 import java.time.LocalDateTime;
 
@@ -16,8 +17,10 @@ public class News {
     @Column(nullable = false, columnDefinition = "TEXT")
     private String content;
 
-    @Column(name = "company_id")
-    private Long companyId;
+    @ManyToOne(fetch = FetchType.EAGER)
+    @JoinColumn(name = "company_id")
+    @JsonIgnoreProperties({"hibernateLazyInitializer", "handler"})
+    private Company company;
 
     @Column(name = "created_at")
     private LocalDateTime createdAt;
@@ -51,12 +54,12 @@ public class News {
         this.content = content;
     }
 
-    public Long getCompanyId() {
-        return companyId;
+    public Company getCompany() {
+        return company;
     }
 
-    public void setCompanyId(Long companyId) {
-        this.companyId = companyId;
+    public void setCompany(Company company) {
+        this.company = company;
     }
 
     public LocalDateTime getCreatedAt() {

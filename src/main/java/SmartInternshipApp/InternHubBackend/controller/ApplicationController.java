@@ -37,6 +37,7 @@ public class ApplicationController {
             @RequestParam(value = "paymentId", required = false) String paymentId,
             @RequestParam(value = "studentId", required = false) MultipartFile studentIdFile,
             @RequestParam(value = "resume", required = false) MultipartFile resumeFile,
+            @RequestParam(value = "invitationLetter", required = false) MultipartFile invitationLetterFile,
             @RequestHeader(value = "Authorization", required = false) String token) {
         
         try {
@@ -52,11 +53,12 @@ public class ApplicationController {
             System.out.println("Token: " + (token != null ? "Present" : "Missing"));
             System.out.println("StudentId file: " + (studentIdFile != null ? studentIdFile.getOriginalFilename() : "null"));
             System.out.println("Resume file: " + (resumeFile != null ? resumeFile.getOriginalFilename() : "null"));
+            System.out.println("Invitation Letter file: " + (invitationLetterFile != null ? invitationLetterFile.getOriginalFilename() : "null"));
             
             applicationService.submitApplication(internshipId, college, degree, yearOfStudy, 
                     groupId, applicationType, teamSize, teamLeader, leaderContact, leaderEmail,
                     teamMembers, memberEmails, academicYear, semester, skills, experience, 
-                    motivation, paymentStatus, paymentAmount, paymentId, studentIdFile, resumeFile, token);
+                    motivation, paymentStatus, paymentAmount, paymentId, studentIdFile, resumeFile, invitationLetterFile, token);
             
             System.out.println("=== Application Submitted Successfully ===");
             return ResponseEntity.ok().body("{\"message\": \"Application submitted successfully\"}");
@@ -65,6 +67,15 @@ public class ApplicationController {
             System.err.println("Error: " + e.getMessage());
             e.printStackTrace();
             return ResponseEntity.badRequest().body("{\"message\": \"" + e.getMessage() + "\"}");
+        }
+    }
+
+    @GetMapping("/group/{groupId}")
+    public ResponseEntity<?> getApplicationByGroupId(@PathVariable Long groupId) {
+        try {
+            return ResponseEntity.ok(applicationService.getApplicationByGroupId(groupId));
+        } catch (Exception e) {
+            return ResponseEntity.status(404).body("{\"message\": \"No application found for this group\"}");
         }
     }
 }

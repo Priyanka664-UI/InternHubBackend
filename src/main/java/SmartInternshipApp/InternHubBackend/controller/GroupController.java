@@ -144,6 +144,16 @@ public class GroupController {
         }
     }
     
+    @GetMapping("/user/{userId}/all")
+    public ResponseEntity<List<Group>> getAllUserGroups(@PathVariable Long userId) {
+        try {
+            List<Group> groups = groupService.getAllUserGroups(userId);
+            return ResponseEntity.ok(groups);
+        } catch (Exception e) {
+            return ResponseEntity.status(500).body(List.of());
+        }
+    }
+    
     @PostMapping("/{groupId}/join-company/{companyId}")
     public ResponseEntity<Group> joinCompany(@PathVariable Long groupId, @PathVariable Long companyId) {
         try {
