@@ -29,26 +29,44 @@ public class AdminApplicationController {
             @RequestHeader(value = "X-User-Type", required = false) Integer userType,
             @RequestHeader(value = "X-Company-Id", required = false) Long companyId) {
         
-        System.out.println("=== GET APPLICATIONS ===");
-        System.out.println("User Type: " + userType);
-        System.out.println("Company ID: " + companyId);
-        
         List<InternshipApplication> applications = applicationRepository.findAll();
-        System.out.println("Total applications before filter: " + applications.size());
         
-        // Filter by company if user_type = 2
         if (userType != null && userType == 2 && companyId != null) {
             applications = applications.stream()
-                .filter(app -> {
-                    boolean match = app.getInternship() != null && 
-                                   companyId.equals(app.getInternship().getCompanyId());
-                    System.out.println("Application " + app.getId() + ": internship companyId=" + 
-                        (app.getInternship() != null ? app.getInternship().getCompanyId() : "null") + 
-                        ", match=" + match);
-                    return match;
-                })
+                .filter(app -> app.getInternship() != null && companyId.equals(app.getInternship().getCompanyId()))
                 .collect(java.util.stream.Collectors.toList());
-            System.out.println("Applications after filter: " + applications.size());
+        }
+        
+        return ResponseEntity.ok(applications);
+    }
+    
+    @GetMapping("/individual")
+    public ResponseEntity<List<InternshipApplication>> getIndividualApplications(
+            @RequestHeader(value = "X-User-Type", required = false) Integer userType,
+            @RequestHeader(value = "X-Company-Id", required = false) Long companyId) {
+        
+        List<InternshipApplication> applications = applicationRepository.findByApplicationType(InternshipApplication.ApplicationType.INDIVIDUAL);
+        
+        if (userType != null && userType == 2 && companyId != null) {
+            applications = applications.stream()
+                .filter(app -> app.getInternship() != null && companyId.equals(app.getInternship().getCompanyId()))
+                .collect(java.util.stream.Collectors.toList());
+        }
+        
+        return ResponseEntity.ok(applications);
+    }
+    
+    @GetMapping("/group")
+    public ResponseEntity<List<InternshipApplication>> getGroupApplications(
+            @RequestHeader(value = "X-User-Type", required = false) Integer userType,
+            @RequestHeader(value = "X-Company-Id", required = false) Long companyId) {
+        
+        List<InternshipApplication> applications = applicationRepository.findByApplicationType(InternshipApplication.ApplicationType.GROUP);
+        
+        if (userType != null && userType == 2 && companyId != null) {
+            applications = applications.stream()
+                .filter(app -> app.getInternship() != null && companyId.equals(app.getInternship().getCompanyId()))
+                .collect(java.util.stream.Collectors.toList());
         }
         
         return ResponseEntity.ok(applications);

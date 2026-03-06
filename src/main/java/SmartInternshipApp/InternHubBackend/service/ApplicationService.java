@@ -47,11 +47,13 @@ public class ApplicationService {
 
     public void submitApplication(Long internshipId, String college, String degree, 
                                    String yearOfStudy, Long groupId, String applicationType,
+                                   String fullName, String email, String phone, String duration, 
+                                   String individualSkills, String individualMotivation,
                                    Integer teamSize, String teamLeader, String leaderContact, String leaderEmail,
                                    String teamMembers, String memberEmails, String academicYear, String semester,
-                                   String skills, String experience, String motivation,
-                                   String paymentStatus, Double paymentAmount, String paymentId,
-                                   MultipartFile studentIdFile, MultipartFile resumeFile, MultipartFile invitationLetterFile, String token) throws Exception {
+                                   String teamExperience, String paymentStatus, Double paymentAmount, String paymentId,
+                                   MultipartFile studentIdFile, MultipartFile resumeFile, MultipartFile invitationLetterFile, 
+                                   MultipartFile pastQualificationFile, String token) throws Exception {
         
         if (token == null || token.isEmpty()) {
             throw new RuntimeException("Authorization token is required");
@@ -99,22 +101,48 @@ public class ApplicationService {
             if (memberEmails != null && !memberEmails.trim().isEmpty()) {
                 coverLetter.append("MEMBER EMAILS:\n").append(memberEmails).append("\n\n");
             }
-            if (skills != null && !skills.trim().isEmpty()) {
-                coverLetter.append("TEAM SKILLS:\n").append(skills).append("\n\n");
+            if (individualSkills != null && !individualSkills.trim().isEmpty()) {
+                coverLetter.append("TEAM SKILLS:\n").append(individualSkills).append("\n\n");
             }
-            if (experience != null && !experience.trim().isEmpty()) {
-                coverLetter.append("PREVIOUS EXPERIENCE:\n").append(experience).append("\n\n");
+            if (teamExperience != null && !teamExperience.trim().isEmpty()) {
+                coverLetter.append("PREVIOUS EXPERIENCE:\n").append(teamExperience).append("\n\n");
             }
-            if (motivation != null && !motivation.trim().isEmpty()) {
-                coverLetter.append("MOTIVATION:\n").append(motivation).append("\n");
+            if (individualMotivation != null && !individualMotivation.trim().isEmpty()) {
+                coverLetter.append("MOTIVATION:\n").append(individualMotivation).append("\n");
             }
             
             application.setCoverLetter(coverLetter.toString());
         } else {
+            // Handle individual application
             application.setApplicationType(InternshipApplication.ApplicationType.INDIVIDUAL);
-            String coverLetter = String.format("College: %s\nDegree: %s\nYear: %s", 
-                    college, degree, yearOfStudy);
-            application.setCoverLetter(coverLetter);
+            
+            // Set individual-specific fields
+            application.setFullName(fullName);
+            application.setEmail(email);
+            application.setPhone(phone);
+            application.setDuration(duration);
+            application.setSkills(individualSkills);
+            application.setMotivation(individualMotivation);
+            
+            // Build cover letter for individual application
+            StringBuilder coverLetter = new StringBuilder();
+            coverLetter.append("INDIVIDUAL APPLICATION\n\n");
+            coverLetter.append("Full Name: ").append(fullName).append("\n");
+            coverLetter.append("Email: ").append(email).append("\n");
+            coverLetter.append("Phone: ").append(phone).append("\n");
+            coverLetter.append("Preferred Duration: ").append(duration).append(" months\n\n");
+            coverLetter.append("College: ").append(college).append("\n");
+            coverLetter.append("Degree: ").append(degree).append("\n");
+            coverLetter.append("Year of Study: ").append(yearOfStudy).append("\n\n");
+            
+            if (individualSkills != null && !individualSkills.trim().isEmpty()) {
+                coverLetter.append("SKILLS & EXPERTISE:\n").append(individualSkills).append("\n\n");
+            }
+            if (individualMotivation != null && !individualMotivation.trim().isEmpty()) {
+                coverLetter.append("WHY THIS INTERNSHIP:\n").append(individualMotivation).append("\n");
+            }
+            
+            application.setCoverLetter(coverLetter.toString());
         }
 
         application.setCollege(college);
@@ -152,6 +180,13 @@ public class ApplicationService {
             String invitationUrl = saveFile(invitationLetterFile, savedApp.getId(), "invitation");
             if (invitationUrl != null) {
                 savedApp.setInvitationLetterUrl(invitationUrl);
+            }
+        }
+        
+        if (pastQualificationFile != null && !pastQualificationFile.isEmpty()) {
+            String pastQualificationUrl = saveFile(pastQualificationFile, savedApp.getId(), "pastQualification");
+            if (pastQualificationUrl != null) {
+                savedApp.setPastQualificationUrl(pastQualificationUrl);
             }
         }
         
@@ -239,5 +274,13 @@ public class ApplicationService {
                 .orElseThrow(() -> new RuntimeException("Group not found"));
         return applicationRepository.findByGroup(group)
                 .orElseThrow(() -> new RuntimeException("No application found for this group"));
+    }
+
+    public java.util.List<InternshipApplication> getIndividualApplicationsByCompany(Long companyId) {
+        return applicationRepository.findByInternship_Company_IdAndApplicationType(companyId, InternshipApplication.ApplicationType.INDIVIDUAL);
+    }
+
+    public java.util.List<InternshipApplication> getGroupApplicationsByCompany(Long companyId) {
+        return applicationRepository.findByInternship_Company_IdAndApplicationType(companyId, InternshipApplication.ApplicationType.GROUP);
     }
 }

@@ -54,6 +54,28 @@ public class InternshipApplication {
     @Column(name = "invitation_letter_url")
     private String invitationLetterUrl;
     
+    @Column(name = "past_qualification_url")
+    private String pastQualificationUrl;
+    
+    // Individual application fields
+    @Column(name = "full_name")
+    private String fullName;
+    
+    @Column(name = "email")
+    private String email;
+    
+    @Column(name = "phone")
+    private String phone;
+    
+    @Column(name = "duration")
+    private String duration;
+    
+    @Column(name = "skills")
+    private String skills;
+    
+    @Column(name = "motivation", length = 2000)
+    private String motivation;
+    
     @Column(name = "payment_status")
     private String paymentStatus;
     
@@ -125,4 +147,25 @@ public class InternshipApplication {
     
     public String getInvitationLetterUrl() { return invitationLetterUrl; }
     public void setInvitationLetterUrl(String invitationLetterUrl) { this.invitationLetterUrl = invitationLetterUrl; }
+    
+    public String getPastQualificationUrl() { return pastQualificationUrl; }
+    public void setPastQualificationUrl(String pastQualificationUrl) { this.pastQualificationUrl = pastQualificationUrl; }
+    
+    public String getFullName() { return fullName; }
+    public void setFullName(String fullName) { this.fullName = fullName; }
+    
+    public String getEmail() { return email; }
+    public void setEmail(String email) { this.email = email; }
+    
+    public String getPhone() { return phone; }
+    public void setPhone(String phone) { this.phone = phone; }
+    
+    public String getDuration() { return duration; }
+    public void setDuration(String duration) { this.duration = duration; }
+    
+    public String getSkills() { return skills; }
+    public void setSkills(String skills) { this.skills = skills; }
+    
+    public String getMotivation() { return motivation; }
+    public void setMotivation(String motivation) { this.motivation = motivation; }
 }
