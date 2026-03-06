@@ -6,6 +6,7 @@ import SmartInternshipApp.InternHubBackend.entity.Student;
 import SmartInternshipApp.InternHubBackend.repository.InternshipApplicationRepository;
 import SmartInternshipApp.InternHubBackend.repository.CertificateRepository;
 import SmartInternshipApp.InternHubBackend.repository.StudentRepository;
+import SmartInternshipApp.InternHubBackend.util.JwtUtil;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -23,6 +24,9 @@ public class StudentDocumentController {
     
     @Autowired
     private StudentRepository studentRepository;
+    
+    @Autowired
+    private JwtUtil jwtUtil;
     
     @org.springframework.beans.factory.annotation.Value("${file.certificate.dir}")
     private String certificateDir;
@@ -69,6 +73,9 @@ public class StudentDocumentController {
                     data.put("yearOfStudy", app.getYearOfStudy());
                     data.put("studentIdUrl", app.getStudentIdUrl() != null ? "/api/files/applications/" + app.getStudentIdUrl() : null);
                     data.put("resumeUrl", app.getResumeUrl() != null ? "/api/files/applications/" + app.getResumeUrl() : null);
+                    data.put("paymentStatus", app.getPaymentStatus());
+                    data.put("paymentAmount", app.getPaymentAmount());
+                    data.put("paymentId", app.getPaymentId());
                     result.add(data);
                 } catch (Exception ex) {
                     System.err.println("Error processing application " + app.getId() + ": " + ex.getMessage());
@@ -225,6 +232,7 @@ public class StudentDocumentController {
         if (cleanToken.startsWith(TOKEN_PREFIX)) {
             return Long.parseLong(cleanToken.replace(TOKEN_PREFIX, ""));
         }
-        throw new RuntimeException("Invalid token format");
+        io.jsonwebtoken.Claims claims = jwtUtil.validateToken(cleanToken);
+        return claims.get("userId", Long.class);
     }
 }
