@@ -60,6 +60,9 @@ public class Company {
     @Transient
     private String cityName;
     
+    @Transient
+    private Boolean passwordSet;
+    
     // Constructors
     public Company() {}
     
@@ -117,4 +120,11 @@ public class Company {
     
     public String getPassword() { return password; }
     public void setPassword(String password) { this.password = password; }
+    
+    public Boolean getPasswordSet() { 
+        return password != null && !password.isEmpty(); 
+    }
+    public void setPasswordSet(Boolean passwordSet) { 
+        this.passwordSet = passwordSet; 
+    }
 }
